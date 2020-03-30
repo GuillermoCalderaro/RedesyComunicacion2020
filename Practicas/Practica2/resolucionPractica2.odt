@@ -1,0 +1,97 @@
+﻿Introducción
+2. ¿Cuál es la función de la capa de aplicación?
+    Ofrece a las aplicaciones (de usuario o no) la posibilidad de acceder a los servicios de las demás capas y define los protocolos que utilizan las aplicaciones para intercambiar datos, como correo electrónico (POP y SMTP), gestores de bases de datos y protocolos de transferencia de archivos (FTP).
+3. Si dos procesos deben comunicarse:
+  a. ¿Cómo podrían hacerlo si están en diferentes máquinas?
+    Los procesos que se hallan en sistemas terminales distintos se comunican intercambiando  mensajes a traves de la red de computadoras. Para poder enviar un mensaje de un host a otro son necesarios dos niveles de direccionamiento. El primero debe indicar la direccion del host que recibira el mensaje y el segundo debe proveer de un identificador que especifique el proceso de recepcion en el host de destino. En Internet el primer requisito es alcanzado a traves de las distintas direcciones IP. El segundo requisito es alcanzado a traves de lo que se conoce como numero de puerto. 
+  b. Y si están en la misma máquina, ¿qué alternativas existen?
+    Si los procesos estan en la misma maquina suelen comunicarse mediante sisteams de comunicación interprocesos, aplicando las reglas propias del sistema operativo del sistema terminal en que dichos procesos se estan ejecutando.
+
+4. Explique brevemente cómo es el modelo Cliente/Servidor. De un ejemplo de un sistema Cliente/Servidor en la “vida cotidiana” y un ejemplo de un sistema informático que siga el modelo Cliente/Servidor. ¿Conoce algún otro modelo de comunicación?
+    La arquitectura cliente/servidor es una de las arquitecturas que pueden utilizarse a la hora de diseñar una aplicación de red. Independietemente de la arquitectura de la red subyacente, los diseñadores de aplicaciones deben diseñar la arquitectura de la aplicación en cuestion. En terminos generales existen dos tipos de arquitecturas o paradigmas arquitectonicos dominantes: la arquitectura cliente/servidor y la arquitectura P2P.
+    En una arquitectura cliente/servidor existe un host siempre activo, denominado servidor, que da servicio a las solicitudes de muchos otros hosts, que son los clintes. El ejemplo clasico de estas arquitecturas es la Web, en la que un servidor web siempre activo sirve las solicitudes de los navegadores que se ejecutan en los clientes. Estas arquitecturas tienen varias caracteristicas siendo una de ellas que los clientes no se comunican directamente entre si. Otra de las caracteristicas es que el servidor tiene una direccion fija y conocida, denominada IP. 
+    En el otro extremo se hallan las arquitecturas P2P (peer to peer) en las que existe minima o ninguna dependencia de una infraestructura de servidores dedicados. En cambio, la aplicación explota la comunicación directa entre parejas de hosts conectados de forma intermitente, conocidos como pares(peers). Los pares no son propiedad del proveedor de servicios sino que son host de otros usuarios finales. Estas arquitecturas tienen varias caracteristicas siendo una de ellas la autoescalabilidad.
+
+5. Describa la funcionalidad de la entidad genérica “Agente de usuario” o “User agent”.
+
+
+    Un agente de usuario no es otra cosa mas que una aplicación informática que funciona como cliente en un protocolo de red; el nombre se aplica generalmente para referirse a aquellas aplicaciones que acceden a la World Wide Web. 
+
+HTTP
+
+6. ¿Qué son y en qué se diferencian HTML y HTTP?
+    Aunque tanto HTTP como HTML son dos componentes esenciales de la web representan dos aspectos muy distintos de la misma. La WWW (red de sistemas de hypertexto inter-linkeados accesible via internet) fue desarrollada por Tim Berners-Lee quien diseño tanto HTTP como HTML. 
+    Mientras que HTTP es uno de los protocolos de la capa de aplicación del Stack TCP/IP de Internet, HTML es un lenguaje de etiquetas usado para codificar el contenido de las paginas web originales. Asi, de sus iniciales HTML = HyperText Markup Languaje y HTTP=HyperText Transfer Protcol se comprende que el segundo es el vehiculo del primero.
+
+
+7. Utilizando la VM, abra una terminal. Investigue sobre el comando curl y analice para qué sirven los siguientes parámetros (-I, -H, -X, -s).
+
+     cURL
+
+$curl -h muestra la lista de comandos
+
+
+ejemplos de uso con tldr
+
+$tldr curl
+
+  Transfers data from or to a server.
+  Supports most protocols, including HTTP, FTP, and POP3.
+  More information: https://curl.haxx.se.
+
+  - Download the contents of an URL to a file:
+    curl http://example.com -o filename
+
+  - Download a file, saving the output under the filename indicated by the URL:
+    curl -O http://example.com/filename
+
+  - Download a file, following [L]ocation redirects, and automatically [C]ontinuing (resuming) a previous file transfer:
+    curl -O -L -C - http://example.com/filename
+
+  - Send form-encoded data (POST request of type application/x-www-form-urlencoded):
+    curl -d 'name=bob' http://example.com/form
+
+  - Send a request with an extra header, using a custom HTTP method:
+    curl -H 'X-My-Header: 123' -X PUT http://example.com
+
+  - Send data in JSON format, specifying the appropriate content-type header:
+    curl -d '{"name":"bob"}' -H 'Content-Type: application/json' http://example.com/users/1234
+
+  - Pass a user name and password for server authentication:
+    curl -u myusername:mypassword http://example.com
+
+  - Pass client certificate and key for a resource, skipping certificate validation:
+    curl --cert client.pem --key key.pem --insecure https://example.com
+
+$man curl
+
+       -I, --head
+              (HTTP  FTP FILE) Solo trae la cabecera! Los servidores-HTTP soportan el comando HEAD el cual solo trae la cabecera de un documento. Cuando se lo usa con FTP o archivos FILE curls muestra solamente el tamaño del archivo y la fecha de ultima modificacion.
+
+       -H, --header <header/@file>
+              (HTTP) Cabecera extra a incluir en un pedido cuando se envia una solicitud HTTP al servidor. Es posible especificar cualquier numero de cabeceras extra.
+             Comenzando en 7.55.0 esta opcion puede aceptar un argumento con el estilo @filename el cual agrega un encabezado for cada linea del filename. Usando @- curl leera de stdin.
+
+ -X, --request <command>
+              (HTTP)  Especifica un metodo personalizado cuando se establece una comunicación HTTP con un servidor. El metodo especificado sera usado en vez del metodo usado por defecto (el cual suele ser GET).
+
+-s, --silent
+              modo silencioso. No mostrara mensajes de error ni la barrad e progresion pero aun asi extraera la informacion solicitada a stdout.
+
+8. Ejecute el comando curl sin ningún parámetro adicional y acceda a www.redes.unlp.edu.ar. Luego responda:
+a. ¿Cuántos requerimientos realizó y qué recibió? Pruebe redirigiendo la salida(>) del comando curl
+a un archivo con extensión html y abrirlo con un navegador.
+b. ¿Cómo funcionan los atributos href de los tags link e img en html?
+c. Para visualizar la página completa con imágenes como en un navegador, ¿alcanza con realizar un
+único requerimiento? ¿Cuántos requerimientos serían necesarios para obtener una página que tiene
+dos CSS, dos Javascript y tres imágenes? Diferencie como funcionaría un navegador respecto al
+comando curl ejecutado previamente.
+
+
+9. Ejecute a continuación los siguientes comandos:
+curl -v -s www.redes.unlp.edu.ar > /dev/null
+curl -I -v -s www.redes.unlp.edu.ar
+¿Qué diferencias nota entre cada uno?
+¿Qué ocurre si en el primer comando quita la redirección a /dev/null? ¿Por qué no es necesaria en
+el segundo comando?
+¿Cuántas cabeceras viajaron en el requerimiento? ¿Y en la respuesta?

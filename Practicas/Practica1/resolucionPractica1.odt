@@ -1,0 +1,80 @@
+Resolucion de la practica 1 de Redes y Computacion -2020
+
+1. ¿Qué es una red? ¿Cuál es el principal objetivo para construir una red?
+
+  Una red de computadoras es un conjunto de computadoras interconectados con el objetivo de intercambiar y compartir recursos, informacion y/o servicios.
+  Se diferencia red de sistema de comunicacion en que este ultimo puede ser definido como el conjunto de computadoras, software de red, medios y dispositivos de interconexion.
+
+2. ¿Qué es Internet? Describa los principales componentes que permiten su funcionamiento.
+
+  Internet es una red de redes de computadoras, descentralizada, publica, que ejecutan el conjunto abierto de protocolos (suite) TCP/IP. Integra diferentes protocolos de un nivel mas bajo : Internetworking.
+
+  Desde una perspectiva de sus componentes Internet puede ser pensada como un conjunto de sistemas terminales que se conectan entre si mediante una red de enlaces de comunicaciones y conmutacion de paquetes. Los sistemas terminales son habitualente servidores o clientes y se hallan en la frontera de la red, mientras que routers y switchers se hallan en el nucleo de la red y conforman la red de enlace y conmutacion de paquetes antes mencionada.
+
+
+3. ¿Qué son las RFCs?
+
+  Las RFC (Request For Comments) son documentos sobre la Internet y sus protocolos. Son abiertas no solo pudiendo cualquiera acceder a ellas sino que cualquier persona puede realizar una propuesta. La IETF (Internet Engeniering Task Force) es la encargada del proceso. Constan de un titulo y un numero unico y se hallan redactadas en ASCII (7bits).
+  Se las clasifica segun un sistema de categorias que denota el proceso de evaluacion en el que se halla. 
+
+4. ¿Qué es un protocolo?
+  
+  Un protocolo define el formato y el orden de los mensajes intercambiados por dos o mas entidades que se comunican, asi como las acciones tomadas al producirse la transmision y/o recepcion de un mensaje u otro suceso.
+
+5. ¿Por qué dos máquinas con distintos sistemas operativos pueden formar parte de una misma red?
+
+  Porque existe un protocolo o conjunto de protocolos comun/es que les permite intercambiar informacion de manera univoca y uniforme. El hecho de que ambas tengan distintos sistema operativos solo afecta el funcionamiento interno del dispositivo y la manera en que este procesa la informacion y/o ejecuta los programas que en el residen. Cuando se requiere que dichos sistemas se comuniquen el hecho de hacerlo a traves de un standard comun asegura que la comunicacion pueda llevarse a cabo sin dificultad. 
+
+6. ¿Cuáles son las 2 categorías en las que pueden clasificarse a los sistemas finales o End Systems? Dé un ejemplo del rol de cada uno en alguna aplicación distribuida que corra sobre Internet.
+
+  Los sistemas terminales, tambien conocidos como hosts(huespedes) suelen ser clasificados en dos categorias: clientes y servidores. Si pensamos en una de las aplicaiones mas conocidas y distribuidas de nuestro tiempo, la WWW, podemos pensar que en una PC de escritorio situada en un hogar se ejecuta un programa de aplicacion como por ejemplo un navegador web. El mismo establece, a traves de la internet, una comunicacion con otro sistema terminal, un servidor que almacena una pagina web realizandole solicitudes al mismo. El servidor ejecuta "su parte" del programa respondiendo a las peticiones del cliente y enviandole la informacion solicitada a traves de internet.
+
+
+7. ¿Cuál es la diferencia entre una red conmutada de paquetes de una red conmutada de circuitos?
+
+  Las diferencias son varias pero son todas consecuencias de concebir al sistema de comunicacion de una manera muy distinta.
+ Las redes de conmutacion de paquetes se basan en el principio que los distintos componentes de intenet intercambian mensaje los cuales, antes de salir de su origen son fragmentados en unidades mas pequeñas llamadas paquetes. Los paquetes asi creados se transmiten a traves de cada enlace  de comunicaciones hasta llegar a su destino. Por otro lado los sistemas de conmutacion de circuitos es necesario establecer establecer una ruta (un circuito) entre el origen y el destino, a traves del cual viajara la informacion: dichas conecciones se llaman coneccion de extremo-a-extremo y son dedicadas para ese origen y destino. Estos sistemas requieren reservar dichos recursos por el tiempo que dure la comunicacion entre sistemas terminales. Por el contrario las redes de conmutacion de paquetes no reservan recursos para la comunicacion, siendo por esto mas economicas. Otra diferencia es que en las redes de conmutacion de paquetes los mismos se pueden perder ya que internet no ofrece ninguna garantia de que los mismos lleguen a destino. Las redes de conmutacion de paquetes tienden a ser mas lentas si se las considera de manera parcial ya que el retarno de la comunicacion depende de la cantidad de nodos que se interpongan entre el orogen y el destino pero dado que no reserva de manera anticipada recursos sino que lo hacen a demanda permiten que el numero de usuarios sea mucho mayor.
+
+ 
+8. Analice qué tipo de red es una red de telefonía y qué tipo de red es Internet.
+
+  En sintonia con lo mencionado en la pregunta anterior podemos afirmar que una red telefonica es una red de conmutacion de circuitos mientras que Internet es una red de conmutacion de paquetes.
+
+9. Describa brevemente las distintas alternativas que conoce para acceder a Internet en su hogar.
+
+  Para que los usuarios finales puedan acceder a internet deben contar un IPS (Internet Provider Service - Proveedor de servicios de Internet) habiendo distintos tipos de ISP: residenciales (como las companias telefonicas o de cable locales); corporativos; universitarios; los ISP de datos moviles que proporcionan acceso movil a nuestros telefonos inteligentes. Cada ISP es en si mismo una red de conmutadoras de paquetes y elnaces de comunicaciones.
+  Hoy en dia los dos tipos de acceso residencial de banda ancha predominantes son las lineas DSL (Digital Subscriber Line - Linea de abonado digital) y el cable. Si se selecciona la primer opcion es claro que la compania telefonica del cliente actua tambien como ISP.
+
+10. ¿Qué ventajas tiene una implementación basada en capas o niveles?
+
+  La principal ventaja, de la cual se derivan las demas es que ofrece un diseño modular el cual provee abstraccion asi como tambien facilita el desarrollo y la evolucion de los distintos componentes de la red. 
+  La abstraccion provee un metodo de ocultar la complejidad de las implementaciones de cada capa. Por ser un sistema basado en servicios cada una de estas capas provee un interface transparente a las de arriba/abajo las cuales consumen o preveen un servicio sin preocuparse por como se implementa.
+  Otra de las ventajas es la encapsulacion que permite desentenderse de los distintos elementos de la carga entregada por un ade las capas adyacentes y solo concentrarse en generar o procesar la informacion de control que se corresponde con el segmento de cabecera de esa capa y solo el de esa capa.
+
+11. ¿Cómo se llama la PDU de cada una de las siguientes capas: Aplicación, Transporte, Red y Enlace?
+
+  Cada capa define su PDU (Protocol Data Unit - Unidad de Datos del Protocolo). Los PDU de la capa de Aplicacion son denominados Mensajes; los de la capa de Transporte segmento; los de la capa de Red datagrama; y los de la capa de Enlace tramas.
+  Cada PDU se compone del PDU de la capa superior, llamado carga y una cabecera, generada por la capa en cuestion, la cual contien einformacion de control para dicha capa.
+
+12. ¿Qué es la encapsulación? Si una capa realiza la encapsulación de datos, ¿qué capa del nodo receptor realizará el proceso inverso?
+ 
+  Si una capa realiza la encapsulacion de datos, en el nodo receptor la misma capa realizara el proceso inverso.
+
+13. Describa cuáles son las funciones de cada una de las capas del stack TCP/IP o protocolo de Internet.
+
+  La pila de protocolos de Internet consta de 5 capas (4 para algunos con fusion de las ultimas dos capas), las cuales desde un enfoque descendente son:
+
+  Capa de Aplicacion: Un protocolo de la capa de aplicacion  esta distribuido entre varios sistemas terminales, con la aplicacion en un sistema terminal utilizando el protocolo para intercambiar paquetes de informacion con la aplicacion que se ejecuta en otro sistema terminal. A este paquete de informacion de la capa de aplicacion lo llamamos mensaje.
+
+  Capa de Transporte: Esta capa transporta los mensajes de la capa de aplicacion entre los puntos terminales de la aplicacion. Los distintos protocolos existentes (TCP/UDP) se diferencian por la capacidad o no deproveer un mecanismo de control de flujo y de asegurar el suministro de mensajes de la capa de aplicacion al destino. 
+
+  Capa de Red(de Internet): Esta capa es responsable de transladar los paquetes de dicha capa lllamados datagramas, de un host a otro. Esta capa incluye el protocolo IP que define los campos del datagrama asi como la forma en que actuan los sistemas terminales y los routers sobre estos campos. Existe un unico protocolo IP y todos los componentes de internet que tienen una capa de red deben ejecutar el protocolo IP.
+
+  Capa de Enlace: Esta capa encamina un datagrama a traves de una serie de routers entre el origen y el destino. Para transladar un paquete de un nodo (host o router) al siguiente de la ruta la capa de red confia en los servicios de la capa de enlace. En concreto, en cada nodo, la capa de red pasa el datagrama a la capa de enlace, que entrega el datagrama al siguiente nodo existente a lo largo de la ruta. En el siguiente nodo la capa de enlace pasa el datagrama a la capa de red.
+
+  Capa Fisica: El trabajo de esta capa consiste en mover de un nodo al siguiente los bits individuales que forman la trama.
+
+14. Compare el modelo OSI con la implementación TCP/IP.
+
+  El modelo OSI difiere del TCP/IP no solo en la cantidad de capas que posee sino tambien en los servicios que ofrece. Aunque ambos ofrecen, grosso modo, servicios similares OSI continua siendo un standard teorico.
+  Ambos tienen una arquitectura de capas. Las capas del modelo OSI son: Aplicacion, Presentacion, Sesion, Transporte, Red, Enlace de Datos, Fisica. La capa de transporte es similar en ambos. Aunque ambos incluyen una capa de Aplicacion incluyen diferentes servicios. EN TCP/IP no existe capa de Presentacion ni Sesion, esas funcionalidades no son provistas por Internet? En general no. Si una apliacion requiere de dichos servicios debera garantizarlo el diseñador de la aplicacion. Las capas de Enlace de datos y la capa Fisica del modelo OSI son combinadas por TCP/IP en una sola capa. Las capas de red son tambien similares, aunque con la diferencia que Internet solo usa el protocolo IP no siendo necesario en el modelo OSI esta restriccion.
