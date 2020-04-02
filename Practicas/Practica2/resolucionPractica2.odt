@@ -78,20 +78,310 @@ $man curl
 -s, --silent
               modo silencioso. No mostrara mensajes de error ni la barrad e progresion pero aun asi extraera la informacion solicitada a stdout.
 
-8. Ejecute el comando curl sin ningún parámetro adicional y acceda a www.redes.unlp.edu.ar. Luego responda:
-a. ¿Cuántos requerimientos realizó y qué recibió? Pruebe redirigiendo la salida(>) del comando curl
-a un archivo con extensión html y abrirlo con un navegador.
-b. ¿Cómo funcionan los atributos href de los tags link e img en html?
-c. Para visualizar la página completa con imágenes como en un navegador, ¿alcanza con realizar un
-único requerimiento? ¿Cuántos requerimientos serían necesarios para obtener una página que tiene
-dos CSS, dos Javascript y tres imágenes? Diferencie como funcionaría un navegador respecto al
-comando curl ejecutado previamente.
 
+8. Ejecute el comando curl sin ningún parámetro adicional y acceda a www.redes.unlp.edu.ar. Luego responda:
+a. ¿Cuántos requerimientos realizó y qué recibió? Pruebe redirigiendo la salida(>) del comando curl a un archivo con extensión html y abrirlo con un navegador.
+
+Realizo un requerimiento inicial para traer la pagina principal.
+Recibo todo el archivo HTML ubicado en esa direccion, el cual es mostrado en stdout. 
+
+
+b. ¿Cómo funcionan los atributos href de los tags link e img en html?
+
+  Cada href tiene el vinculo a un recurso que la pagina necesita o referencia. Cuando el navegador los necesita (ya sea al cargar la pagina o al hacer click sobre un link) se realiza una solicitud GET a esa direccion y se obtiene como respuesta el contenido que la pagina web necesitaba (por ej. una imagen).
+
+c. Para visualizar la página completa con imágenes como en un navegador, ¿alcanza con realizar un único requerimiento? ¿Cuántos requerimientos serían necesarios para obtener una página que tiene dos CSS, dos Javascript y tres imágenes? Diferencie como funcionaría un navegador respecto al comando curl ejecutado previamente.
+
+    Para visualizar la pagina correctamente en el navegador se realiza un primer GET a la pagina www.redes.unlp.edu.ar. Al obtener esta pagina el navegador parsea el HTML y por cada cuando encuentra una tag con un atributo href accede a la direccion que este indica, realizando otra solicitud para obtener el recurso necesario para cargar la pagina completa. Por lo tanto en el caso de ejemplo mencionado seria necesario 8 requerimientos en total: uno para la pagina y 7 para el resto de los componentes mencionados.
 
 9. Ejecute a continuación los siguientes comandos:
 curl -v -s www.redes.unlp.edu.ar > /dev/null
 curl -I -v -s www.redes.unlp.edu.ar
 ¿Qué diferencias nota entre cada uno?
-¿Qué ocurre si en el primer comando quita la redirección a /dev/null? ¿Por qué no es necesaria en
-el segundo comando?
+    La solicitud es distinta. En el primero es un GET, mientras que en la segunda es un HEAD.
+
+¿Qué ocurre si en el primer comando quita la redirección a /dev/null? ¿Por qué no es necesaria en el segundo comando?
+
+    Porque en el segundo comando solo se solicita el encabezado(header) de la respuesta, mientras que en el primero el cuerpo de la misma se descarta y no se muestra en stdout.
 ¿Cuántas cabeceras viajaron en el requerimiento? ¿Y en la respuesta?
+    En ambos casos viajaron las mismas cabeceras en el requerimiento
+
+> User-Agent: curl/7.38.0
+> Host: www.redes.unlp.edu.ar
+> Accept: */*
+ 
+  En la respuesta tambien viajaron las mismas y fueron:
+
+< Date: Thu, 02 Apr 2020 13:02:07 GMT
+* Server Apache/2.4.41 (Unix) is not blacklisted
+< Server: Apache/2.4.41 (Unix)
+< Last-Modified: Thu, 19 Mar 2020 14:39:34 GMT
+< ETag: "1322-5a136232cd580"
+< Accept-Ranges: bytes
+< Content-Length: 4898
+< Content-Type: text/html
+
+
+10. (Ejercicio de promoción) Resuelva los siguientes ejercicios justificando sus respuestas.
+NOTA: para quienes hagan la promoción, este será un ejercicio entregable. En la entrega deberán estar todas las preguntas respondidas y debidamente justificadas. En los puntos donde es necesario ejecutar comandos, los mismos deberán adjuntarse a la entrega.
+  a. Investigue los distintos tipos de códigos de retorno de un servidor web y su significado. Considere que los mismos se clasifican en categorías (2XX, 3XX, 4XX, 5XX).
+    
+    El codigo de error es un numero entero de tres digitos el cual brinda informacion sobre el intento de comprender y satisfacer una respuesta.
+    Aunque no es requerido que los clientes entiendan el significado de todos los codigos registrados, obviamenta dicha comprension es deseable. Sin embargo un cliente debe entender la clase de cualquiera de los codidos de error, el cual es señalado por el primer digito.    
+    El primer digito del codigo define la clase de respuesta. Los ultimos dos digitos no tienen ningun rol en la categorizacion de los codigos.
+    Hay cinco valores para el primer digito:
+
+   o  1xx (Informational): La solicitud fue recibida, continua su procesamiento.
+
+   o  2xx (Successful): La solicitud fue recibida exitosamente, entendida y aceptada.
+
+   o  3xx (Redirection): Son necesarias mas acciones para poder satisfacer la solicitud.
+
+   o  4xx (Client Error): La solicitud contiene mala sintaxis o no puede ser satisfecha.
+
+   o  5xx (Server Error): El servidor fallo en responer una solicitud aparentemente valida.
+
+
+  b. Utilizando curl, realice un requerimiento con el método HEAD al sitio www.redes.unlp.edu.ar e indique:
+
+    Se ejecuta el comando
+      $ curl -I -v www.redes.unlp.edu.ar
+
+    i. ¿Qué información brinda la primer línea de la respuesta?
+        La primer linea de la respuesta tiene el siguiente formato
+
+        <HTTP Version> <Status Code> <Reason Phrase>
+        
+        En el caso del comando mencionado la respuesta es:
+
+        HTTP/1.1 200 OK 
+
+    ii. ¿Cuántos encabezados muestra la respuesta?
+        La respuesta consta de los siguientes 7 encabezados
+
+        Date: Thu, 02 Apr 2020 16:13:42 GMT
+        Server: Apache/2.4.41 (Unix)
+        Last-Modified: Thu, 19 Mar 2020 14:39:34 GMT
+        ETag: "1322-5a136232cd580"
+        Accept-Ranges: bytes
+        Content-Length: 4898
+        Content-Type: text/html
+
+
+    iii. ¿Qué servidor web está sirviendo la página?
+        Tal como indica el segundo encabezado, el servidor es un Apache.
+
+    iv. ¿El acceso a la página solicitada fue exitoso o no?
+
+        El acceso fue exitoso, tal y como lo indica el codigo de respuesta 200 con su agregado ‘OK’.  
+
+    v. ¿Cuándo fue la última vez que se modificó la página?
+
+        Fue modificada por ultima vez el Jueves 19 de Marzo del 2020 a las 14 horas con 39 minutos. Dicha informacion se halla enb el tercer encabezado.
+
+    vi. Solicite la página nuevamente con curl usando GET, pero esta vez indique que quiere obtenerla sólo si la misma fue modificada en una fecha posterior a la que efectivamente fue modificada. ¿Cómo lo hace? ¿Qué resultado obtuvo? ¿Puede explicar para qué sirve?
+
+        Para realizar la solicitud ejecutamos
+
+              $ curl -H 'If-Modified-Since: Thu, 19 Mar 2020 14:39:34 GMT' www.redes.unlp.edu.ar
+
+        El flag -H permite agregar cualquiera de los metodos HTTP que se desee en la solicitud. En este caso estamos diciendo que queremos realizar una solicitud GET (por defecto) a la direccion indicada y queremos obtener una respuesta solo si la pagina web fue modificado en cualquier momento posterior a la fecha indicada en la cabecera ‘If-Modified-Since:’. 
+        Vemos que no obtenemos respuesta en stdout. Esto es lo deseado pero podemos obtener mas informacion si ejecutamos los comandos 
+
+        $ curl -H 'If-Modified-Since: Thu, 19 Mar 2020 14:39:34 GMT' www.redes.unlp.edu.ar-I
+
+        o
+
+        $ curl -H 'If-Modified-Since: Thu, 19 Mar 2020 14:39:34 GMT' www.redes.unlp.edu.ar-v
+
+       Con ambos podemos visualizar la cabecera de la respuesta cuya primera linea es:
+
+        HTTP/1.1 304 Not Modified       
+
+        Con la opcion verbose (flag -v) podemos ademas verificar la cabecera de la solicitud, en la cual podemos observar el encabezado que incluimos con el flag -H, tal como se muestra a continuacion:
+
+GET / HTTP/1.1
+User-Agent: curl/7.38.0
+Host:www.redes.unlp.edu.ar
+Accept: */*
+If-Modified-Since: Thu, 19 Mar 2020 14:39:34 GMT
+
+        Este mecanismo se utiliza para realizar Client side caching (cachear informacion del lado del cliente). Cuando los navegadores incluyen esta caberea en la solicitud el servidor puede responder solo con un encabezado con un codigo  304 y sin un cuerpo, indicando que la copia que se posee en cache del recurso solicitado es igual a la que posee el servidor, o sea que no ha sufrido modificaciones desde la fecha en cuestion, permitiendo asi ahorrar ancho de banda y hacer mas eficiente y agil el flujo de l ainformacion.
+
+  c. Utilizando curl, acceda al sitio www.redes.unlp.edu.ar/restringido/index.php y siga las instrucciones
+y las pistas que vaya recibiendo hasta obtener la respuesta final. Será de utilidad para resolver este ejercicio poder analizar tanto el contenido de cada página como los encabezados. Para la entrega de promoción, adjunte todos los comandos que ejecutó junto con una explicación de cuáles fueron los diferentes indicios que lo llevaron a tomar cada decisión.
+
+    Comenzamos ejecutando el siguiente comando
+
+$ curl  www.redes.unlp.edu.ar/restringido/index.php  
+
+    En stdout aparecio lo siguiente:
+
+<h1>Acceso restringido</h1>
+
+<p>Para acceder al contenido es necesario autenticarse. Para obtener los datos de acceso seguir las instrucciones detalladas en www.redes.unlp.edu.ar/obtener-usuario.php</p>
+
+    Para aclarar un poco ams el motivo decidimos hacer:
+
+$ curl  www.redes.unlp.edu.ar/restringido/index.php  -I
+
+    y asi poder visualizar el header de la respuesta. Obtuvimos la siguiente respuesta:
+
+HTTP/1.1 401 Unauthorized
+Date: Thu, 02 Apr 2020 18:28:18 GMT
+Server: Apache/2.4.41 (Unix)
+WWW-Authenticate: Basic realm="Authentication Required"
+Last-Modified: Tue, 17 Mar 2020 15:16:01 GMT
+ETag: "cb-5a10e69d90e40"
+Accept-Ranges: bytes
+Content-Length: 203
+Content-Type: text/html
+
+    Aqui destaca el codigo de respuesta 401:Unauthorized junto con el encabezado WWW-Authenticate: Basic realm="Authentication Required" el cual indica que es necesario realizar un proceso de autenticacion para acceder al sitio. Para ello seguimos als pistas originales y ejecutamos:
+
+$ curl  www.redes.unlp.edu.ar/obtener-usuario.php  
+
+    Donde obtuvimos la siguiente respuesta:
+
+<p>Para obtener el usuario y la contraseña haga un requerimiento a esta página seteando el encabezado 'Usuario-Redes' con el valor 'obtener'</p>
+
+    Asi que seguimos las instrucciones y ejecutamos:
+
+$ curl  www.redes.unlp.edu.ar/obtener-usuario.php  -H 'Usuario-Redes: obtener'
+
+    usando el flag -H para setear el encabezado como nos era requerido. Obtuvimos la siguiente respuesta en stdout
+
+<p>Bien hecho! Los datos para ingresar son: 
+
+    Usuario: redes
+
+    Contraseña: RYC
+
+    Ahora vuelva a acceder a la página inicial con los datos anteriores.
+
+    PISTA: Investigue el uso del encabezado Authorization para el método Basic. El comando base64 puede ser de ayuda!</p>
+
+    Luego de un par de pruebas e intentos hallamos la siguiente solucion:
+
+$ curl  redes:RYC@www.redes.unlp.edu.ar/restringido/index.php  -v
+
+    la cual ejecutamos con la opcion -v para obtener mayor claridad del proceso realizado
+ 
+GET /restringido/index.php HTTP/1.1
+Authorization: Basic cmVkZXM6UllD
+User-Agent: curl/7.38.0
+Host: www.redes.unlp.edu.ar
+Accept: */*
+
+HTTP/1.1 302 Found
+Date: Thu, 02 Apr 2020 18:25:00 GMT
+Server Apache/2.4.41 (Unix) is not blacklisted
+Server: Apache/2.4.41 (Unix)
+X-Powered-By: PHP/7.3.15
+Location: http://www.redes.unlp.edu.ar/restringido/the-end.php
+Content-Length: 230
+Content-Type: text/html; charset=UTF-8
+
+<h1>Excelente!</h1>
+
+<p>Para terminar el ejercicio deberás agregar en la entrega los datos que se muestran en la siguiente página.</p>
+<p>ACLARACIÓN: la URL de la siguiente página está contenida en esta misma respuesta.</p>
+
+    Como se puede ver en la cabecera de la solicitud se incluyo el encabezado ‘Authorization: Basic cmVkZXM6UllD’, permitiendo acceder al sitio. El mismo tb podria haberse obtenido usando el comando base64 sobre la secuencia de caracteres ‘redes:RYC’ y colocando la salida del mismo en el encabezado ‘Authorization: Basic’ usando el comando -H.
+    Finalmente accedimos al sitio  http://www.redes.unlp.edu.ar/restringido/the-end.php y obtuvimos la respuesta que mostramos a continuacion:
+
+Respuesta
+
+
+¡Felicitaciones, llegaste al final del ejercicio! En la entrega adjuntá la siguiente información: Fecha: 2020-04-02 18:26:21 Verificación: 04b7ccd6d764c748caccb969bd2b9214bac2eafde16c98b73f8ca6c194bf73a8
+
+
+
+11. Utilizando la VM, realice las siguientes pruebas:
+a. Ejecute el comando ’cat /home/redes/prueba-http-1-0.txt’ y copie la salida completa (incluyendo los dos enter que aparecen debajo del texto).
+b. Desde la consola, ejecute el comando telnet www.redes.unlp.edu.ar 80 y luego pegue el contenido que tiene almacenado en el portapapeles. ¿Qué ocurre luego de hacerlo? 
+c. Repita el proceso anterior, pero copiando el contenido del archivo /home/redes/prueba-http-1-1.txt. Verifique que debería poder pegar varias veces el mismo contenido sin tener que ejecutar telnet nuevamente.
+
+12. En base a lo obtenido en el ejercicio anterior, responda:
+¿Qué está haciendo al ejecutar el comando telnet?
+
+    Luego de ejecutar telnet www.redes.unlp.edu.ar se establece una coneccion TCP con el sitio. A partir de ese momento se ingresa el contenido del archivo /home/redes/prueba-http-1-0.txt, lo cual no es mas que una solicitud HTTP GET y se obtiene la respuesta a dicha solicitud, luego de lo cual se cierra la coneccion.
+
+
+¿Qué comando HTTP utilizó? ¿Qué recurso solicitó?
+
+   En ambos casos se utilizo el comando GET. El recurso solicitado era el que se hallaba disponible en el puerto 80 (el puerto por defecto del protocolo HTTP) del sitio www.redes.unlp.edu.ar.
+
+
+¿Qué diferencias notó entre los dos casos? ¿Puede explicar por qué?
+
+    La diferencia fue que en el primer caso la coneccion TCP no fue persistente, mientras que en el segundo caso se utilizo una coneccion TCP persistente. Esto permitio realizar multiples solicitudes sin tener que ejecutar varias veces el comando telnet. En cambio en el primer caso, luego de realizar la solicitud y obtener la respuesta la coneccion se cerraba automaticamente. 
+    Esto se explica porque en el primer caso se permitia trabajar con HTTP/1.0 el cual no trabajaba con conecciones persistentes por defecto. Mientras que en el segundo caso, la solicitud se hace solo con la version 1.1, la cual trabaja con conecciones persistentes por defecto.
+
+    ¿Cuál de los dos casos le parece más eficiente? Piense en el ejercicio donde analizó la cantidad de requerimientos necesarios para obtener una página con estilos, javascripts e imágenes. El caso elegido, ¿puede traer asociado algún problema?
+
+    En principio el metodo de conecciones persistentes es mejor debido a que, en el caso contrario, cada vez que querramos traer un recurso deberemos hacer una solicitud y previo a ello deberemos establecer una coneccion TCP. Asi, en el caso mencionado de la pagina con sus 7 recursos, para poder mostrar la pagina en un navegador sera necesario realizar una coneccion TCP (junto con su finalizacion) por cada solicitud. Dado que en total es necesario realizar 8 GET seran necesarias las mismas conecciones TCP junto con los retardos y trafico que esto implica. Las conecciones persistentes evitan esto ya que en una sola coneccion TCP es posible realizar varias solicitudes HTTP.
+
+13. ¿Cuál sería la diferencia entre un protocolo binario y uno basado en texto? ¿de que tipo de protocolo se trata HTTP/1.0, HTTP/1.1 y HTTP/2?
+
+    La diferencia es que mientras que un protocolo codifica la informacion que sobre el viaja en formato ASCII, el otro no lo hace, permaneciendo en este ultimo caso en formato binario. 
+    Las versiones de HTTP previas a la 2.0 usan un formato de texto, principalmente ASCII, mientras que HTTP version 2.0 utiliza un protocolo binario.
+    La ventaja que tiene el uso de un protocolo binario es la facilidad para encontrar el comienzo y el final de cada frame, que es algo realmente complicado en cualquier protocolo de texto. Además, los protocolos binarios son mucho más simples y por lo tanto son menos propensos a tener errores que los protocolos de texto utilizados por las versiones anteriores a HTTP 2.0.
+    RFC 7540 define el estandar del protocolo 2.0.
+    RFC 2068 y 2616 define el estandar del protocolo 1.1.
+    RFC 1945 define el estandar del protocolo 1.0.
+
+14. Analice de que se tratan las siguientes características de HTTP/2: stream, frame, server-push
+
+15. Responder las siguientes preguntas, utilizando las capturas que se encuentran publicadas en la plataforma.
+a. ¿Qué función cumple la cabecera Host en HTTP 1.1? ¿Existía en HTTP 1.0? ¿Qué sucede en HTTP/2? (Ver la captura http1.1.pcapng y compare con la captura http2_native.pcapng)
+b. ¿Cómo quedaría en HTTP/2 el siguiente pedido realizado en HTTP1.1 si se está usando el http y no https?
+
+    GET /index.php HTTP/1.1
+    Host: www.info.unlp.edu.ar
+
+16. En el siguiente ejercicio veremos la diferencia entre los métodos POST y GET. Para ello, será necesario
+utilizar la VM y la herramienta Wireshark. Antes de iniciar considere:
+Capture los paquetes utilizando la interfaz con IP 172.28.0.1. (Menú “Capture ->Options”. Luego
+seleccione la interfaz correspondiente y presione Start).
+Para que el analizador de red sólo nos muestre los mensajes del protocolo http introduciremos la ca-
+dena ‘http’ (sin las comillas) en la ventana de especificación de filtros de visualización (display-filter).
+Si no hiciéramos esto veríamos todo el tráfico que es capaz de capturar nuestra placa de red. De los
+paquetes que son capturados, aquel que esté seleccionado será mostrado en forma detallada en la
+sección que está justo debajo. Como sólo estamos interesados en http ocultaremos toda la informa-
+ción que no es relevante para esta práctica (Información de trama, Ethernet, IP y TCP). Desplegar
+la información correspondiente al protocolo HTTP bajo la leyenda “Hypertext Transfer Protocol”.
+Para borrar la cache del navegador, deberá ir al menu “Herramientas->Borrar historial reciente”.
+Alternativamente puede utilizar Ctrl+F5 en el navegador para forzar la petición HTTP evitando el uso
+de caché del navegador.
+En caso de querer ver de forma simplificada el contenido de una comunicación http, utilice el botón
+derecho sobre un paquete HTTP perteneciente al flujo capturado y seleccione la opción Follow TCP
+Stream.
+a. Abra un navegador e ingrese a la URL: www.redes.unlp.edu.ar e ingrese al link en la sección “Capa
+de Aplicación” llamado “Métodos HTTP”. En la página mostrada se visualizan dos nuevos links
+llamados: Método GET y Método POST. Ambos muestran un formulario como el siguiente:
+
+
+b. Analice el código HTML.
+c. Utilizando el analizador de paquetes Wireshark capture los paquetes enviados y recibidos al presio-
+nar el botón Enviar.
+d. ¿Qué diferencias detectó en los mensajes enviados por el cliente?
+e. ¿Observó alguna diferencia en el browser si se utiliza un mensaje u otro?
+Ejercicio de parcial
+curl -X ?? www.redes.unlp.edu.ar/??
+> HEAD /metodos/ HTTP/??
+> Host: www.redes.unlp.edu.ar
+> User-Agent: curl/7.54.0
+< HTTP/?? 200 OK
+< Server: nginx/1.4.6 (Ubuntu)
+< Date: Wed, 31 Jan 2018 22:22:22 GMT
+< Last-Modified: Sat, 20 Jan 2018 13:02:41 GMT
+< Content-Type: text/html; charset=UTF-8
+< Connection: close
+a. ¿Qué versión de HTTP podría estar utilizando el servidor?
+b. ¿Qué método está utilizando? Dicho método, ¿retorna el recurso solicitado?
+c. ¿Cuál es el recurso solicitado?
+d. El recurso solicitado, ¿fue obtenido exitosamente?
+e. Si la solicitud hubiera llevado un encabezado que diga:
+If-Modified-Since: Sat, 20 Jan 2018 13:02:41 GMT
+¿Cuál habría sido la respuesta del servidor web? ¿Qué habría hecho el navegador en este caso?
