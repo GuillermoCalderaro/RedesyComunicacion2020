@@ -331,42 +331,88 @@ c. Repita el proceso anterior, pero copiando el contenido del archivo /home/rede
     RFC 2068 y 2616 define el estandar del protocolo 1.1.
     RFC 1945 define el estandar del protocolo 1.0.
 
-14. Analice de que se tratan las siguientes características de HTTP/2: stream, frame, server-push
+14. Analice de que se tratan las siguientes características de HTTP/2: stream, frame, server-push.
+
+    Las caracteristicas mencionadas de HTTP/2 son todas soluciones a las dificultades generadas a lo largo de los ultimos años por HTTP/1.1.
+    Server-Push se refiere a la posibilidad que tiene los servidores de enviar informacion adicional, que aun no ha sido requerida pero muy probablemente lo sea, al recibir un requerimiento. Imaginemos que un cliente solicita una pagina web realizando un GET request. Al obtener la respuesta, el browser parsea el HTML y observa mas recursos (por ejemplo css o js) necesarios para mostrar la pagina. Entonces el cliente realizara nuevas solicitudes al servidor. En server-push cuando un servidor detecta que un cliente solicito un recurso que, casi invariablemente le implicara solicitar los otros recursos necesarios, el servidor puede enviar ‘por anticipado’, o sea pushear, dichos recursos. En el ejemplo en cuestion al recibir la solicitud de una pagina web, el servidor envia tanto el html, sino el css y el js necesario para el correcto render de la misma. Server-push es siempre opcional. El servidor no puede forzar a un cliente a recibir dicho push si no lo desea.
+    Streams y frames son otras de las caracteristicas que hacen que HTTP/2 supere a versiones anteriores. Marcar los inicios y fines de u flujo de informacion es mucho mas facil en binario que en texto plano. Al ser un protocolo binario, HTTP/2 es mucho mas eficiente a la hora de delimitar los frames. 
+    Un stream es una sequencia de frames independiente y bidireccional intercambiados entre un cliente y un servidor sobre una coneccion HTTP/2. Una coneccion HTTP/2 puede contener multiples streams concurrentes abiertos. Los streams pueden ser establecidos y usados unilateralmente o compartidos por el cliente o el servidor y pueden ser cerrados por cualquiera de los dos extremos. Los streams se pueden multiplexar, lo cual implica que los paquetes de cualquier stream pueden estar mezclado en la misma coneccion http/2.
 
 15. Responder las siguientes preguntas, utilizando las capturas que se encuentran publicadas en la plataforma.
 a. ¿Qué función cumple la cabecera Host en HTTP 1.1? ¿Existía en HTTP 1.0? ¿Qué sucede en HTTP/2? (Ver la captura http1.1.pcapng y compare con la captura http2_native.pcapng)
+
+La cabecera Host identifica el host o terminal destino al cual se le solicita un recurso. En HTTP/1.0 existia pero era opcional, tal como muestra la siguiente coneccion telnet:
+
+$ telnet www.google.com 80
+Trying 172.217.172.228...
+Connected to www.google.com.
+Escape character is '^]'.
+HEAD / HTTP/1.0
+
+HTTP/1.0 200 OK
+Date: Sun, 05 Apr 2020 13:13:23 GMT
+Expires: -1
+Cache-Control: private, max-age=0
+Content-Type: text/html; charset=ISO-8859-1
+. . . 
+
+En HTTP/1.1 es obligatoria y omitirla genera una respuesta 400 tal y como se evidencia a continuacion
+
+$ telnet www.google.com 80
+Trying 172.217.172.228...
+Connected to www.google.com.
+Escape character is '^]'.
+ HEAD / HTTP/1.1
+HTTP/1.0 400 Bad Request
+Content-Length: 54
+Content-Type: text/html; charset=UTF-8
+Date: Sun, 05 Apr 2020 13:16:01 GMT
+
+<html><title>Error 400 (Bad Request)!!1</title></html>
+
+    Es posible utilizar el parametro Host para multiplexar varios servicios en el mismo host (hosts virtuales).
+
+    En HTTP/2 no existe el header Host como tal, en cambio los clientes que generen solicitudes HTTP/2 directamente deben usar el :authority pseudo header en vez del Host header. Un intermediario que convierte una HTTP/2 request a una 1.1 debe crear el encabezado Host copiando el valor del pseudo encabezado :authority.  
+
+
 b. ¿Cómo quedaría en HTTP/2 el siguiente pedido realizado en HTTP1.1 si se está usando el http y no https?
 
     GET /index.php HTTP/1.1
     Host: www.info.unlp.edu.ar
 
-16. En el siguiente ejercicio veremos la diferencia entre los métodos POST y GET. Para ello, será necesario
-utilizar la VM y la herramienta Wireshark. Antes de iniciar considere:
-Capture los paquetes utilizando la interfaz con IP 172.28.0.1. (Menú “Capture ->Options”. Luego
-seleccione la interfaz correspondiente y presione Start).
-Para que el analizador de red sólo nos muestre los mensajes del protocolo http introduciremos la ca-
-dena ‘http’ (sin las comillas) en la ventana de especificación de filtros de visualización (display-filter).
-Si no hiciéramos esto veríamos todo el tráfico que es capaz de capturar nuestra placa de red. De los
-paquetes que son capturados, aquel que esté seleccionado será mostrado en forma detallada en la
-sección que está justo debajo. Como sólo estamos interesados en http ocultaremos toda la informa-
-ción que no es relevante para esta práctica (Información de trama, Ethernet, IP y TCP). Desplegar
-la información correspondiente al protocolo HTTP bajo la leyenda “Hypertext Transfer Protocol”.
-Para borrar la cache del navegador, deberá ir al menu “Herramientas->Borrar historial reciente”.
-Alternativamente puede utilizar Ctrl+F5 en el navegador para forzar la petición HTTP evitando el uso
-de caché del navegador.
-En caso de querer ver de forma simplificada el contenido de una comunicación http, utilice el botón
-derecho sobre un paquete HTTP perteneciente al flujo capturado y seleccione la opción Follow TCP
-Stream.
-a. Abra un navegador e ingrese a la URL: www.redes.unlp.edu.ar e ingrese al link en la sección “Capa
-de Aplicación” llamado “Métodos HTTP”. En la página mostrada se visualizan dos nuevos links
-llamados: Método GET y Método POST. Ambos muestran un formulario como el siguiente:
+    Como se menciono el en el punto a.    
 
+
+16. En el siguiente ejercicio veremos la diferencia entre los métodos POST y GET. Para ello, será necesario utilizar la VM y la herramienta Wireshark. Antes de iniciar considere:
+    Capture los paquetes utilizando la interfaz con IP 172.28.0.1. (Menú “Capture ->Options”. Luego seleccione la interfaz correspondiente y presione Start).
+    Para que el analizador de red sólo nos muestre los mensajes del protocolo http introduciremos la cadena ‘http’ (sin las comillas) en la ventana de especificación de filtros de visualización (display-filter). Si no hiciéramos esto veríamos todo el tráfico que es capaz de capturar nuestra placa de red. De los paquetes que son capturados, aquel que esté seleccionado será mostrado en forma detallada en la sección que está justo debajo. Como sólo estamos interesados en http ocultaremos toda la información que no es relevante para esta práctica (Información de trama, Ethernet, IP y TCP). Desplegar la información correspondiente al protocolo HTTP bajo la leyenda “Hypertext Transfer Protocol”.
+    Para borrar la cache del navegador, deberá ir al menu “Herramientas->Borrar historial reciente”. Alternativamente puede utilizar Ctrl+F5 en el navegador para forzar la petición HTTP evitando el uso de caché del navegador.
+    En caso de querer ver de forma simplificada el contenido de una comunicación http, utilice el botón derecho sobre un paquete HTTP perteneciente al flujo capturado y seleccione la opción Follow TCP Stream.
+    a. Abra un navegador e ingrese a la URL: www.redes.unlp.edu.ar e ingrese al link en la sección “Capa de Aplicación” llamado “Métodos HTTP”. En la página mostrada se visualizan dos nuevos links llamados: Método GET y Método POST. Ambos muestran un formulario como el siguiente:
+
+
+    – imagen de un formulario --
 
 b. Analice el código HTML.
-c. Utilizando el analizador de paquetes Wireshark capture los paquetes enviados y recibidos al presio-
-nar el botón Enviar.
+c. Utilizando el analizador de paquetes Wireshark capture los paquetes enviados y recibidos al presionar el botón Enviar.
 d. ¿Qué diferencias detectó en los mensajes enviados por el cliente?
+
+    La principal diferencia se halla en el encabezado de la solicitud y en el cuerpo de la misma. Al rellenar formularios, los valores del mismo suelen enviarse en el cuerpo de una solicitud POST tal y como evidencia el encabezado siguiente
+
+POST /http/metodos-lectura-valores.php HTTP/1.1 
+
+
+
+    En cambio, es posible utilizar la URL para enviar informacion. Ese metodo esta deprecado, en tanto que es mas vulnerable y tiene mas limitaciones, pero es posible y se ejemplifica en el encabezado de la siguiente solicitud
+
+GET /http/metodos-lectura-valores.php?form_nombre=Guillermo&form_apellido=Calderaro&form_mail=guillermocalderaro%40gmai&form_sexo=sexo_masc&form_pass=redes&form_confirma_mail=on HTTP/1.1
+
+
 e. ¿Observó alguna diferencia en el browser si se utiliza un mensaje u otro?
+    No. No note ninguna diferencia.
+
+
+
 Ejercicio de parcial
 curl -X ?? www.redes.unlp.edu.ar/??
 > HEAD /metodos/ HTTP/??
@@ -379,9 +425,26 @@ curl -X ?? www.redes.unlp.edu.ar/??
 < Content-Type: text/html; charset=UTF-8
 < Connection: close
 a. ¿Qué versión de HTTP podría estar utilizando el servidor?
+
+1.0 o 1.1
+
 b. ¿Qué método está utilizando? Dicho método, ¿retorna el recurso solicitado?
+
+    Head
+
 c. ¿Cuál es el recurso solicitado?
+
+< HTTP/?? 200 OK
+< Server: nginx/1.4.6 (Ubuntu)
+< Date: Wed, 31 Jan 2018 22:22:22 GMT
+< Last-Modified: Sat, 20 Jan 2018 13:02:41 GMT
+< Content-Type: text/html; charset=UTF-8
+< Connection: close
+
+
 d. El recurso solicitado, ¿fue obtenido exitosamente?
+
+    Si, 
 e. Si la solicitud hubiera llevado un encabezado que diga:
 If-Modified-Since: Sat, 20 Jan 2018 13:02:41 GMT
 ¿Cuál habría sido la respuesta del servidor web? ¿Qué habría hecho el navegador en este caso?
