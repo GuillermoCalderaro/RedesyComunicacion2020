@@ -7,7 +7,7 @@
 
 2. ¿Qué es un root server? ¿Qué es un generic top-level domain (gtld)?
 
-    El espacio de nombres de Internet, sobre el cual trabaja el DNS, ha sido organizado de forma jerárquica a través de dominios, sub-dominios y nombres finales. Cada eslabón de la jerarquía es un dominio o subdominio (también llamados ZONAS) que contiene un espacio de nombres bajo esta denominación. Los dominios de primer nivel de la jerarquía son conocidos como TLD (Top Level Domain) y están predefinidos. Actualmente son manejados por la IANA (Internet Assigned Numbers Authority) a través del ICANN (Internet Corporation for Asigned Names and Numbers).
+    El espacio de nombres de Internet, sobre el cual trabaja el DNS, ha sido organizado de forma jerárquica a través de dominios, sub-dominios y nombres finales. Cada eslabón de la jerarquía es un dominio o sub-dominios (también llamados ZONAS) que contiene un espacio de nombres bajo esta denominación. Los dominios de primer nivel de la jerarquía son conocidos como TLD (Top Level Domain) y están predefinidos. Actualmente son manejados por la IANA (Internet Assigned Numbers Authority) a través del ICANN (Internet Corporation for Asigned Names and Numbers).
     Los TLD mas importantes se podrían clasificar en tres grupos:
     -gTLD, Generic TLD,
     -ccTLD, CountryCode TLD y
@@ -170,13 +170,13 @@ mail2.redes.unlp.edu.ar. 86400	IN	A	172.28.0.91
 ;; MSG SIZE  rcvd: 121
 
     Como se desprende de su analisis hay dos servidores de correo, tal y como se indican por los Registrso MX :  mail.redes.unlp.edu.ar. Y mail2.redes.unlp.edu.ar. Los numeros asociados hacen referencia a la prioridad. Esta informacion es utilizada para determinar a cual de los servidores posibles recurrir. El numero mas bajo indica mayor prioridad, por lo tanto, en nuestro caso, utilizariamos inicialmente el que tiene asignado un 5 de prioridad: mail.redes.unlp.edu.ar. y, en caso de que dicho servidor no este activo, podremos recurrir al de menor prioridad para el envio del mail.
-    Como se menciono una de las razones por la cual contar con ams de un servidor es la de mantener la atencion de mails aunque un servidor no se halle disponible. Es tambien posible asignarles a ambos la misma prioridad logrando asi distribuir la carga entre ambos.
+    Como se menciono una de las razones por la cual contar con mas de un servidor es la de mantener la atencion de mails aunque un servidor no se halle disponible. Es tambien posible asignarles a ambos la misma prioridad logrando asi distribuir la carga entre ambos.
 
 c. ¿Cuáles son los servidores de DNS del dominio redes.unlp.edu.ar?
 
     Ejecutamos el siguiente comando
 
-$ dig redes.unlp.edu.ar ns
+$ dig redes.unlp.edu.ar -t ns
 
     y obtuvimos la siguiente respuesta:
 
@@ -208,7 +208,7 @@ ns-sv-b.redes.unlp.edu.ar. 604800 IN	A	172.28.0.30
 
 d. Repita la consulta anterior cuatro veces más. ¿Qué observa? ¿Puede explicar a qué se debe?
 
-    Al repetir la consulta observamos que en ocasiones el primer servidor de la lista era intercambiado por el segundo y esto se volvia a repetir al continuar nuestros intentos. Esto sucede porque, a diferencia de los registros MX, los registros NS  no llevan asociados una prioridad, teniendo todos los servidores la misma precedencia. Para lograr un mejor balance, al ir respondiendo se deberia ir rotando el orden con el que se entregan los servidores autoritativos para una zona. Efectivamente esto es lo que sucede en este caso.
+    Al repetir la consulta observamos que en ocasiones el primer servidor de la lista era intercambiado por el segundo y esto se volvia a repetir al continuar nuestros intentos. Esto sucede porque, a diferencia de los registros MX, los registros NS  no llevan asociados una prioridad, teniendo todos los servidores la misma precedencia. Para lograr un mejor balance de la carga de trabajo, al ir respondiendo las consultas se deberia ir rotando el orden con el que se entregan los servidores autoritativos para una zona. Efectivamente esto es lo que sucede en este caso.
 
 e. Observe la información que obtuvo al consultar por los servidores de DNS del dominio. En base a la salida, ¿es posible indicar cuál de ellos es el primario?
 
@@ -251,12 +251,13 @@ redes.unlp.edu.ar.	86400	IN	SOA	ns-sv-b.redes.unlp.edu.ar. root.redes.unlp.edu.a
 
   ii. ¿Cuál es el número de serie, qué convención sigue y en qué casos es importante actualizarlo?
 
-    Los numeros de serie siguen la convencion YYYYMMDDSS, tienen un tamaño de 32 bits y deben actualizarlos cada vez que se hace alguna modificacion al dominio. En este ejemplo el numero de serie es el  2020031700 e indica que la ultima modificacion fue realizada el dia 17 de marzo del año 2020.
+    Los numeros de serie siguen la convencion YYYYMMDDSS, tienen un tamaño de 32 bits y deben actualizarlos cada vez que se hace alguna modificacion al dominio. En este ejemplo el numero de serie es el  2020031700 e indica que la ultima modificacion fue realizada el dia 17 de marzo del año 2020. 
 
   iii. ¿Qué valor tiene el TTL de caché negativa y qué significa?
 
     Los TTL son uno de los parametros que comprenden los registros SOA. En un principio se utilizaba como el tiempo de vida de un registro actualmente se utiliza como el TLL de Cacheo Negativo("Negative caching"). Este se basa en el principio que aprovecha el almacenamiento de informacion de que algo no existe. De esta manera el cacheo negativo es util ya que reduce el tiempo de respuesta de las consultas que tendran un resultado negativo. Asimismo reduce el numero de mensajes que deben ser enviados entre resolvers y servidores DNS, reduciendo asi el trafico en la red. Segun la RFC que contiene la informacion referente a este topico [RFC 2308] una gran proporcion del trafico DNS de la Internet podria ser eliminado si todos los resolvers implementaran negative caching.
-    En el ejemplo en cuestion el valor del TTL es de  86400.
+    Resumiendo lo mencionado anteriormente el TTL de cache negativa representa el tiempo en segundos que tendre en cache una respuesta que fue negativa. Supongamos que un servidor local realiza una comnsulta y al salir a buscarla se encuentra que no existe. Si se le consulta nuevamente no saldra a buscarlo, ya que tiene informacion de que no existe. Puede responder entonces que la informacion buscada no existe. ¿Pero por cuanto tiempo podra sostenerlo? Ese tiempo es el que establece el TTL de cacheo Negativo. Pasado ese tiempo, si le realizan una consulta, debera salir a buscarla para verificar su estado.
+    En el ejemplo en cuestion el valor del TTL es de  86400. ¿Que significa esto? Que se esperaran 86400 segundos antes de 
 
 g. Indique qué valor tiene el registro TXT para el nombre saludo.redes.unlp.edu.ar.
 
@@ -313,38 +314,175 @@ redes.unlp.edu.ar.	86400	IN	SOA	ns-sv-b.redes.unlp.edu.ar. root.redes.unlp.edu.a
 
   i. ¿Qué significan los números que aparecen antes de la palabra IN? ¿Cuál es su finalidad?
 
-    Los numero representan el TTL (Time to live), el cual representa el tiempo en segundos pasados los cuales los servidores secundarios deben refrescar desde el servidor primario. 
+    Los numero representan el TTL (Time to live), el culrae preseta el tiempo en segundos por el cual el registro es valido en una cache. Cuando un servidor local realiza una query y cachea la informacion sabe, gracias a ese registro, que la informacion sera valida durante ese tiempo.
 
   ii. ¿Cuántos registros NS observa? Compare la respuesta con los servidores de DNS del dominio redes.unlp.edu.ar que dio anteriormente. ¿Puede explicar a qué se debe la diferencia y qué significa?
 
+    En esta ocasión podemos observar que hay dos registros DNS mas, lo cual pareceria discrepar con la respuesta previa que dijimos que el dominio redes.unlp.edu.ar poseia solo dos. Pero al observar con mas atencion la respuesta podemos observar que, sobre la izquierda de la misma, los dos registro NS mas no corresponden a redes.unlp.edu.ar sino a practica.redes.unlp.edu.ar. Si bien un dominio contiene al otro nada impide que subdominios no pueden tener tambien sus propios registros DNS.
+
 i. Consulte por el registro A de www.redes.unlp.edu.ar y luego por el registro A de www.practica.redes.unlp.edu.ar. Observe los TTL de ambos. Repita la operación y compare el valor de los TTL de cada uno respecto de la respuesta anterior. ¿Puede explicar qué está ocurriendo? (Pista: observar los flags será de ayuda).
 
+    Al ejecutar 
 
+$ dig -t a www.redes.unlp.edu.ar +nocomments +nostats
+
+    obtenemos
+
+; <<>> DiG 9.9.5-9+deb8u18-Debian <<>> -t a www.redes.unlp.edu.ar
+;; global options: +cmd
+;www.redes.unlp.edu.ar.		IN	A
+www.redes.unlp.edu.ar.	300	IN	A	172.28.0.50
+
+    mientras que al hacer 
+$ dig -t a www.practica.redes.unlp.edu.ar +nocomments +nostats
+
+    obtenemos
+
+; <<>> DiG 9.9.5-9+deb8u18-Debian <<>> -t a www.practica.redes.unlp.edu.ar
+;; global options: +cmd
+;www.practica.redes.unlp.edu.ar.	IN	A
+www.practica.redes.unlp.edu.ar.	60 IN	A	172.28.0.10
+
+    Lo llamativo es que, al repetir las consultas, vemos que el TTL asociado al registro A de www.practica.redes.unlp.edu.ar disminuye hasta llegar a 0 mientras que el TTL asociado al registro A de www.redes.unlp.edu.ar se mantiene constante. Cuando el primero llega a 0, se reinicia en 60 y comienza nuevamente a decrementarse. 
+    Para entender lo que sucede debemos consular los flags que se pueden observar al inicio de la salida estandar de la consulta (se omiten aquí por brevedad pudiendose observarse si se repiten los comandos previos sin el flag de +nocomments). Al observarlos vemos que la respuesta a la primer consulta tiene los flags AA de la respuesta (de Authoritative Answer) mientras que en la segunda no los tiene. Por lo tanto la primera fue realizada a un servidor aotoritativo, pero la segunda no. 
+     Sucede que los TTL de los servidores autoritativos no cambian (por que lo harian, si ellos son autoritativos para ese dominio). Como mencionamos previamente la segunda consulta esta siendo resuelta en un servidor que no es autoritativo para el dominio pero, no obstante, tiene cacheada la consulta en su memoria. Cuando le realizamos la consulta, dado que él conserva la respuesta previa y el TTL no ha llegado a 0, puede respondernos con al informacion disponible en su cache. Cuando la TTL llega a 0 tambien nos responde, pero en ese caso debe verificar que la informacion sea valida ya que al consultar en su cache y ver que el TTL a expirado no puede asegurar que la informacion sea valida o confiable. Realiza entonces la consulta nuevamente y, al obtenerla obtiene, junto con ella, el TTL (60 seg) que le indica por cuanto tiempo sera valida.
 
 12. Investigue los comando nslookup y host. ¿Para qué sirven? Intente con ambos comandos obtener:
+
+    Ambas son utilidades para realizar consultas DNS.
+
   - Dirección IP de www.redes.unlp.edu.ar.
+
+$ host www.redes.unlp.edu.ar
+
+www.redes.unlp.edu.ar has address 172.28.0.50
+
+$ nslookup www.redes.unlp.edu.ar
+
+Server:		172.28.0.29
+Address:	172.28.0.29#53
+
+Name:	www.redes.unlp.edu.ar
+Address: 172.28.0.50
+
   - Servidores de correo del dominio redes.unlp.edu.ar.
-  - Servidores de DNS del dominio redes.unlp.edu.ar.
+ $ host -t MX redes.unlp.edu.ar
+
+redes.unlp.edu.ar mail is handled by 10 mail2.redes.unlp.edu.ar.
+redes.unlp.edu.ar mail is handled by 5 mail.redes.unlp.edu.ar.
+
+
+$ nslookup -type=MX redes.unlp.edu.ar
+
+Server:		172.28.0.29
+Address:	172.28.0.29#53
+
+redes.unlp.edu.ar	mail exchanger = 5 mail.redes.unlp.edu.ar.
+redes.unlp.edu.ar	mail exchanger = 10 mail2.redes.unlp.edu.ar.
+
+ - Servidores de DNS del dominio redes.unlp.edu.ar.
+
+$ nslookup -type=NS redes.unlp.edu.ar
+
+Server:		172.28.0.29
+Address:	172.28.0.29#53
+
+redes.unlp.edu.ar	nameserver = ns-sv-a.redes.unlp.edu.ar.
+redes.unlp.edu.ar	nameserver = ns-sv-b.redes.unlp.edu.ar.
+
+$ host -t NS redes.unlp.edu.ar
+
+redes.unlp.edu.ar name server ns-sv-b.redes.unlp.edu.ar.
+redes.unlp.edu.ar name server ns-sv-a.redes.unlp.edu.ar.
+
 
 13. ¿Qué función cumple en Linux/Unix el archivo /etc/hosts o en Windows el archivo \WINDOWS\system32\drivers\etc\hosts?
+
+The file /etc/hosts started in the old days of DARPA as the resolution file for all the hosts connected to the internet (before DNS existed). It has the maximum priority, meaning this file is preferred ahead of any other name system.1
+
+However, as a single file, it doesn't scale well: the size of the file becomes too big very soon. That is why the DNS system was developed, a hierarchical distributed name system. It allows any host to find the numerical address of some other host efficiently.
+
+The very old concept of the /etc/hosts file is very simple, just an address and a host name:
+
+127.0.0.1      localhost
+for each line. That is a simple list of pairs of address-host.2
+
+Its primary present-day use is to bypass DNS resolution. A match found in the /etc/hosts file will be used before any DNS entry. In fact, if the name searched (like localhost) is found in the file, no DNS resolution will be performed at all.
+
+1 Well, the order of name resolution is actually defined in /etc/nsswitch.conf, which usually has this entry:
+
+hosts:          files dns
+which means "try files (/etc/hosts); and if it fails, try DNS."
+
+But that order could be changed or expanded.
+
+2 (in present days) The hosts file contains lines of text consisting of an IP address in the first text field followed by one or more host names. Each field is separated by white space – tabs are often preferred for historical reasons, but spaces are also used. Comment lines may be included; they are indicated by an octothorpe (#) in the first position of such lines. Entirely blank lines in the file are ignored. For example, a typical hosts file may contain the following:
+
+127.0.0.1   localhost loopback
+::1         localhost localhost6 ipv6-localhost ipv6-loopback mycomputer.local
+192.168.0.8 mycomputer.lan
+10.0.0.27   mycomputer.lan
+This example contains entries for the loopback addresses of the system and their host names, the first line is a typical default content of the hosts file. The second line has several additional (probably only valid in local systems) names. The example illustrates that an IP address may have multiple host names (localhost and loopback), and that a host name may be mapped to both IPv4 and IPv6 IP addresses, as shown on the first and second lines respectively. One name (mycomputer.lan) may resolve to several addresses (192.168.0.8 10.0.0.27). However, in that case, which one is used depends on the routes (and their priorities) set for the computer.
+
 
 14. Abra el programa Wireshark para comenzar a capturar el tráfico de red en la interfaz con IP 172.28.0.1. Una vez abierto realice una consulta DNS con el comando dig para averiguar el registro MX de redes.unlp.edu.ar y luego, otra para averiguar los registros NS correspondientes al dominio redes.unlp.edu.ar.
 Analice la información proporcionada por dig y compárelo con la captura.
 
 15. Dada la siguiente situación: “Una PC en una red determinada, con acceso a Internet, utiliza los servicios de DNS de un servidor de la red”. Analice:
   a. ¿Qué tipo de consultas (iterativas o recursivas) realiza la PC a su servidor de DNS?
-  b. ¿Qué tipo de consultas (iterativas o recursivas) realiza el servidor de DNS para resolver requeri-
-mientos de usuario como el anterior? ¿A quién le realiza estas consultas?
+
+    Realiza consultas recursivas.
+
+  b. ¿Qué tipo de consultas (iterativas o recursivas) realiza el servidor de DNS para resolver requerimientos de usuario como el anterior? ¿A quién le realiza estas consultas?
+
+    Realiza consultas iterativas. El a quien depende de varios factores. Podomos pensar que primero va a buscar la consulta en su cache. Si la posee la saldra a buscar. La busqueda dependera naturalmente tanto de la consulta como de la configuracion del servidor local. En e caso extremo comenzara por los TLD y descendera en la jerarquia hasta que encuentre la respuesta deseada.
 
 16. Relacione DNS con HTTP. ¿Se puede navegar si no hay servicio de DNS?
 
+    DNS ofrece servicios transparentes para convertir nombres de dominio a direcciones IP. Si uno conoce la IP que desea utilizar, podria acceder a ellas directamente. Seria sumamente impractico.
+
 17. Observar el siguiente gráfico y contestar:
+
+
+
+
   a. Si la PC-A, que usa como servidor de DNS a "DNS Server", desea obtener la IP de www.unlp.edu.ar, cuáles serían, y en qué orden, los pasos que se ejecutarán para obtener la respuesta.
+
+1. Cuando una aplicación de la PC-A requiere un servicio del sistema de DNS, por ejemplo resolver un nombre a su correspondiente dirección IP, invocará la función ofrecida por el resolver. Suponiendo que éste es un Stub Resolver, sólo buscará en su configuración la lista de servidores de nombres locales. Alli, en este esquema presentado, encontrara la direccion 192.168.10.2.
+
+2. Enviará por lo tanto la consulta a este. El Servidor Local será el responsable de responderle de forma afirmativa con una o más direcciones IP, o de forma negativa indicando que no encontró lo consultado.
+
+3. Si el primer servidor no responde (no está activo), el resolver podrá tratar de resolver la consulta utilizando el siguiente de los servidores locales configurados (en este caso no se especifica dicha situacion).
+
+4. Los servidores locales (en  este caso DNS Server 192.168.10.2.)podrán responder utilizando su cache o saliendo a buscar la consulta hacia los
+ROOT Name Servers. Existe la posibilidad que los servidores locales no hablen, directamente, con los ROOT Name Servers y lo hagan sólo a través de un Forwarder Name Server. También, es posible que el servidor local sea un Servidor Autoritativo y recibe una consulta de un nombre sobre el cual él tiene autoridad. En este caso, responde desde su base de datos de nombres indicando
+que es una Respuesta Autoritativa, caso contrario, puede responder tomando los datos de la cache, indicando que es una Respuesta NO Autoritativa.
+
+5. El resolver delega, por completo, la responsabilidad en el Servidor Local y éste se debe encargar de resolver la consulta. Esto es lo que se llama una Consulta Recursiva. Sólo los servidores locales deberı́an admitir consultas recursivas desde los equipos de su misma red. Los ROOT Name Servers no deberı́an admitir prácticamente consultas recursivas.
+
+6. El Servidor Local, una vez que tiene la consulta y se ha fijado que no es por un nombre local ni está en su caché, deberá intentar resolverla externamente. Podrá intentar resolverlo de forma Recursiva, preguntando a otro servidor de nombres y delegando la resolución en éste. Como, en general, las consultas Recursiva están sólo habilitadas de forma local, deberá resolverla con una
+Consulta Iterativa encargándose el mismo.
+
+7. Comenzará preguntando de forma iterativa a los ROOT Name Servers. Estos no responderán con la resolución del nombre, sino que se fijarán en la consulta, comenzando del último label del nombre (el de más arriba en la jerarquı́a), cuáles son los servidores encargados de este dominio y responderán con una lista de los mismos. Es posible que tengan conocimiento de más labels, lo que
+permitirá enviar una respuesta más cercana y acortar los saltos de la búsqueda.
+    En este caso, al consultar al A.root-server con IP 25.10.100.10 este le indicara la direccion de algun servidor con autoridad para el dominio .ar, en este caso el servidor a.dns.ar con IP 200.108.145.50. Este continuara buscando a traves de los distintos labels respondiendo con los servidores de los dominios .edu.ar, .unlp.edu.ar hasta obtener la informacion buscada. Pero en cada ocasión los servidores le responden al servidor local cual es el siguiente eslabon en la cadena y el debe realizar las consultas.
+
+8. Es asi como, el Servidor Local, a partir de la lista de servidores de nombres para el primer eslabón de la consulta, preguntará al primero de estos, nuevamente, por el nombre completo. Si este servidor es No autoritativo, como sucedı́a con los ROOT Name Servers, para el sub-dominio indicado responderá con otra lista de servidores que tienen delegado el sub-dominio. De esta forma, irá
+bajando en la jerarquı́a hasta llegar a un Servidor Autoritativo para el subdominio consultado.
+
+9. Cuando la consulta llegue a un Servidor Autoritativo, éste resolverá el nombre de la consulta a la correspondiente dirección IP y se la entregará al Servidor Local.
+
   b. ¿Dónde es recursiva la consulta? ¿Y dónde iterativa?
+
+    Queda claro de la descripcion precedente.
 
 18. ¿A quién debería consultar para que la respuesta sobre www.google.com sea autoritativa?
 
+    A un servidor autoritativo para el dominio. 
+
 19. ¿Qué sucede si al servidor elegido en el paso anterior se lo consulta por www.info.unlp.edu.ar? ¿Y si la consulta es al servidor 8.8.8.8?
+
+    Los pasos sera los mismos hasta que el servidor local consulte por info.unlp.edu.ar. Ahi la consulta diferira ya que esta preguntando por otro dominio.
 
 Ejercicio de parcial
 
