@@ -1,0 +1,370 @@
+﻿Práctica 4 Capa de Aplicación - Correo electrónico
+
+1. ¿Qué protocolos se utilizan para el envío de mails entre el cliente y su servidor de correo? ¿Y entre servidores de correo?
+
+2. ¿Qué protocolos se utilizan para la recepción de mails? ¿Incluiría a HTTP en dichos protocolos? Enumere y explique características y diferencias entre las alternativas posibles.
+
+    Los servidores de correo (sea que actuen clomo cliente o servidor) se comunican mediante SMTP (Simple Mail Transfer Protocol). Ahora bien, cuando un Agente de Usuario de correo quiere enviar el mensaje de correo a su propio servidor de correo utiliza SMTP mientras que cuando un Agente de Usuario quiere recibir su correo desde su servidor de correo quiere de un protocolo distinto. En la actualidad los dos mas utilizados son IMAP (Internet Mail Access Protocol) e POP3 (Post Office Protocol – Version 3).
+    HTTP puede reemplazar solo la parte inicial o final del envio y recepcion de mails pero no la parte intermedia. Asi un User Agent puede enviar un correo a traves de su navegador web utilizando el protocolo HTTP. Igualmente puede usar el navegador y, por tanto, dicho protocolo para acceder a dichos mails. Pero cuando llega la hora de enviar un mail desde un servidor de correo a otro, HTTP no reemplaza a SMTP.
+
+3. Utilizando la VM y teniendo en cuenta los siguientes datos, abra el cliente de correo (Icedove) y configure dos cuentas de correo. Una de las cuentas utilizará POP para solicitar al servidor los mails recibidos para la misma mientras que la otra utilizará IMAP.
+   Al crear cada una de las cuentas, seleccionar Manual config y luego de configurar las mismas según lo indicado, ignorar advertencias por uso de conexión sin cifrado.
+
+Datos para POP
+  Cuenta de correo: alumnopop@redes.unlp.edu.ar
+  Nombre de usuario: alumnopop
+  Contraseña: alumnopoppass
+  Puerto: 110
+
+Datos para IMAP
+  Cuenta de correo: alumnoimap@redes.unlp.edu.ar
+  Nombre de usuario: alumnoimap
+  Contraseña: alumnoimappass
+  Puerto: 143
+
+Datos comunes para ambas cuentas
+  Servidor de correo entrante (POP/IMAP):
+    • Nombre: mail.redes.unlp.edu.ar
+    • SSL: None
+    • Autenticación: Normal password
+  Servidor de correo saliente (SMTP):
+    • Nombre: mail.redes.unlp.edu.ar
+    • Puerto: 25
+    • SSL: None
+    • Autenticación: Normal password
+
+a. Verificar el correcto funcionamiento enviando un email desde el cliente de una cuenta a la otra y luego desde la otra responder el mail hacia la primera.
+
+b. Análisis del protocolo SMTP
+
+  i. Utilizando Wireshark, capture el tráfico de red contra el servidor de correo mientras desde la cuenta alumnopop@redes.unlp.edu.ar envía un correo a alumnoimap@redes.unlp.edu.ar
+  ii. Utilice el filtro SMTP para observar los paquetes del protocolo SMTP en la captura generada y analice el intercambio de dicho protocolo entre el cliente y el servidor para observar los distintos comandos utilizados y su correspondiente respuesta. Ayuda: filtre por protocolo SMTP y sobre alguna de las líneas del intercambio haga click derecho y seleccione Follow TCP Stream. . .
+
+    Al realizar dichas accion se puede visualizar en una pantalla la comunicación entre los dos servidores a traves de la cual se intercambia el mail. A continuacion ofrecemos una copia:
+
+220 mail.redes.unlp.edu.ar ESMTP Postfix (Lihuen-4.01/GNU)
+EHLO [172.28.0.1]
+250-mail.redes.unlp.edu.ar
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250 CHUNKING
+MAIL FROM:<alumnopop@redes.unlp.edu.ar> SIZE=441
+250 2.1.0 Ok
+RCPT TO:<alumnoimap@redes.unlp.edu.ar>
+250 2.1.5 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+To: alumnoimap@redes.unlp.edu.ar
+From: alumnopop <alumnopop@redes.unlp.edu.ar>
+Subject: Testing with Wireshark
+Message-ID: <5E8F8174.1020800@redes.unlp.edu.ar>
+Date: Thu, 9 Apr 2020 20:11:32 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101
+ Icedove/38.6.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Esto es una prueba...
+
+Fin de la prueba
+.
+250 2.0.0 Ok: queued as 2EA8D198
+QUIT
+221 2.0.0 Bye
+
+  iii. Desde una terminal de comandos, utilice los comandos observados en el punto anterior para enviar un mail de manera manual. Después de hacerlo, verifique que haya recibido el correo. Para conectarse al servidor deberá utilizar el comando:
+  telnet mail.redes.unlp.edu.ar 25
+
+
+
+c. Análisis de encabezados
+
+  i. Desde una terminal de comandos envíe un mail de manera manual al puerto 25 del servidor mail.redes.unlp.edu.ar utilizando, en la directiva del envelop mail from: una cuenta de correo diferente de la cuenta de correo utilizada en el encabezado From: 
+    a) Verifique en el correo recibido la cuenta que el usuario percibe como el remitente del correo.
+
+    b) Analice los fuentes del correo para ver si es posible observar tanto la información indicada tanto en la directiva del envelop mail from: como en el encabezado From:.
+
+    En la prueba realizada se coloco alumnopop@redes.unlp.edu.ar como cuenta de origen en el Envelop MAIL FROM:, mientras que en el en la informacion del encabezado from: se coloco alumnootroquepop@redes.unlp.edu.ar.
+    Aunque en la bandeja de entrada aparace el segundo como el remitente del mail, tanto al ingresar al correo como al tratar de responderlo el mail colocado en el Envelop es el identificado como remitente del mismo. 
+
+  
+ii. Usando el cliente de correo, icedove del usuario alumnopop@redes.unlp.edu.ar envíe un correo electrónico alumnoimap@redes.unlp.edu.ar el cual debe tener: un asunto, datos en el body y una imagen adjunta.
+
+    a) Verifique los fuentes del correo recibido para entender como se utiliza el header “Çontent-Type: multipart/mixed" para poder realizar el envío de distintos archivos adjuntos.
+    b) Extraiga la imagen adjunta del mismo modo que lo hace el cliente de correo a partir de los fuentes del mensaje.
+
+    Al realizar el experimento obtenemos lo siguiente:
+
+220 mail.redes.unlp.edu.ar ESMTP Postfix (Lihuen-4.01/GNU)
+EHLO [172.28.0.1]
+250-mail.redes.unlp.edu.ar
+250-PIPELINING
+250-SIZE 10240000
+250-VRFY
+250-ETRN
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-8BITMIME
+250-DSN
+250 CHUNKING
+MAIL FROM:<alumnopop@redes.unlp.edu.ar> SIZE=6412
+250 2.1.0 Ok
+RCPT TO:<alumnoimap@redes.unlp.edu.ar>
+250 2.1.5 Ok
+DATA
+354 End data with <CR><LF>.<CR><LF>
+To: alumnoimap@redes.unlp.edu.ar
+From: alumnopop <alumnopop@redes.unlp.edu.ar>
+Subject: Correo con adjunto
+Message-ID: <5E91B58D.4070602@redes.unlp.edu.ar>
+Date: Sat, 11 Apr 2020 12:18:21 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:38.0) Gecko/20100101
+ Icedove/38.6.0
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------050108060503000006010305"
+
+This is a multi-part message in MIME format.
+--------------050108060503000006010305
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Esto es un mail
+
+--------------050108060503000006010305
+Content-Type: image/jpeg;
+ name="luna.jpg"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="luna.jpg"
+
+/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxISEhISEhIVFRUVFQ8VEhUVFRAQEBUVFRIW
+.
+.
+.
+kQchCAjzEZTEICtsjkcQDKRGUhxGVVSZXIQixEBmMIoYYQgHHEID/9k=
+--------------050108060503000006010305--
+.
+250 2.0.0 Ok: queued as 41E63195
+QUIT
+221 2.0.0 Bye
+
+    En el encabezado se puede observar lo siguiente:
+
+Content-Type: multipart/mixed;
+ boundary="------------050108060503000006010305"
+
+   el cual indica que el mensaje posee informacion adjunta y establece el limite para marcar las distintas partes del mismo(cuerpo e informacion adjunta).
+    Luego de marcar el limite del cuerpo se incluye la imagen. En su encabezado podemos observar que se establece el tipo de archivo adjunto y se acompaña de una larga cadena de caracteres la cual esta codificada, tal y como tambien se observa en el encabezado en base64 
+
+    Content-Transfer-Encoding: base64
+
+    Utilizando la herramienta base64 ingresamos la informacion contenida en dicha cadena de caracteres y reconstruimos la imagen. Simplemente guardamos dichas informacion en un archivo llamadp ‘imagen’ y ejecutammos el comandos
+
+	$ base64 -d imagen > imagen.jpg
+
+
+d. Análisis del protocolo POP
+
+  i. Utilizando Wireshark, capture el tráfico de red contra el servidor de correo mientras desde la cuenta alumnoimap@redes.unlp.edu.ar le envía una correo a alumnopop@redes.unlp.edu.ar y mientras alumnopop@redes.unlp.edu.ar recepciona dicho correo.
+
+  ii. Utilice el filtro POP para observar los paquetes del protocolo POP en la captura generada y analice el intercambio de dicho protocolo entre el cliente y el servidor para observar los distintos comandos utilizados y su correspondiente respuesta.
+
+e. Análisis del protocolo IMAP
+
+  i. Utilizando Wireshark, capture el tráfico de red contra el servidor de correo mientras desde la cuenta alumnopop@redes.unlp.edu.ar le envía una correo a alumnoimap@redes.unlp.edu.ar y mientras alumnoimap@redes.unlp.edu.ar recepciona dicho correo.
+  ii. Utilice el filtro IMAP para observar los paquetes del protocolo IMAP en la captura generada y analice el intercambio de dicho protocolo entre el cliente y el servidor para observar los distintos comandos utilizados y su correspondiente respuesta.
+
+f. IMAP vs POP
+
+  i. Marque como leídos todos los correos que tenga en el buzón de entrada de alumnopop y de alumnoimap. Luego, cree una carpeta llamada POP en la cuenta de alumnopop y una llamada IMAP en la cuenta de alumnoimap. Asegurese que tiene mails en el inbox y en la carpeta recientemente creada en cada una de las cuentas.
+  ii. Con el rol de administrador del sistema (root), ejecute el cliente de correos. Para esto, abra una consola de comandos y ejecute: sudo icedove
+De esta forma, iniciará el cliente de correo con el perfil del superusuario (diferente del usuario con el que ya configuró las cuentas antes mencionadas).
+Luego configure las cuentas POP e IMAP de los usuarios alumnopop y alumnoimap como se describió anteriormente pero desde el cliente de correos ejecutado con el usuario root.
+  Luego responda:
+a) ¿Qué correos ve en el buzón de entrada de ambas cuentas? ¿Están marcados como leídos o como no leídos? ¿Por qué?
+b) ¿Qué pasó con las carpetas POP e IMAP que creó en el paso anterior?
+
+  iii. En base a lo observado. ¿Qué protocolo le parece mejor? ¿POP o IMAP? ¿Por qué? ¿Qué protocolo considera que utiliza más recursos del servidor? ¿Por qué?
+
+4. (Ejercicio de promoción) Utilizando la herramienta Swaks, envíe un correo electrónico con las siguientes características:
+NOTA: para quienes hagan la promoción, este será un ejercicio entregable. En la entrega deberán estar todas las preguntas respondidas y debidamente justificadas. En los puntos donde es necesario ejecutar comandos, los mismos deberán adjuntarse a la entrega.
+
+Dirección destino: Dirección de correo de alumnoimap@redes.unlp.edu.ar
+Dirección origen: Dirección de correo de uno de los integrantes del grupo
+Asunto: SMTP-<Número de grupo>
+Archivo adjunto: PDF del enunciado de la práctica
+Cuerpo del mensaje: Nombres de los integrantes del grupo
+
+Al ejecutar el comando 
+
+$ swaks --to alumnoimap@redes.unlp.edu.ar --from guillermocalderaro@gmail.com --body --attach-name $HOME/Descargas/p04.pdf --add-header 'SMTP-AE'
+
+    la linea de comandos nos solicita el ingreso del cuerpo del mensaje. Esto es asi debido a que seleccionamos la opcion –body sin argumentos extra. Completamos los dato y presionamos enter 
+
+Body: Tadeo Martin Velis\nGuillermo Calderaro
+
+    y obtuvimos la siguiente respuesta por salida standar:
+
+
+=== Trying mail.redes.unlp.edu.ar:25...
+=== Connected to mail.redes.unlp.edu.ar.
+<-  220 mail.redes.unlp.edu.ar ESMTP Postfix (Lihuen-4.01/GNU)
+ -> EHLO redes
+<-  250-mail.redes.unlp.edu.ar
+<-  250-PIPELINING
+<-  250-SIZE 10240000
+<-  250-VRFY
+<-  250-ETRN
+<-  250-STARTTLS
+<-  250-ENHANCEDSTATUSCODES
+<-  250-8BITMIME
+<-  250-DSN
+<-  250 CHUNKING
+ -> MAIL FROM:<guillermocalderaro@gmail.com>
+<-  250 2.1.0 Ok
+ -> RCPT TO:<alumnoimap@redes.unlp.edu.ar>
+<-  250 2.1.5 Ok
+ -> DATA
+<-  354 End data with <CR><LF>.<CR><LF>
+ -> Date: Sat, 11 Apr 2020 14:15:52 +0000
+ -> To: alumnoimap@redes.unlp.edu.ar
+ -> From: guillermocalderaro@gmail.com
+ -> Subject: test Sat, 11 Apr 2020 14:15:52 +0000
+ -> X-Mailer: swaks v20130209.0 jetmore.org/john/code/swaks/
+ -> MIME-Version: 1.0
+ -> Content-Type: multipart/mixed; boundary="----=_MIME_BOUNDARY_000_2725"
+ -> SMTP-AE
+ -> 
+ -> ------=_MIME_BOUNDARY_000_2725
+ -> Content-Type: text/plain
+ -> 
+ -> Tadeo Martin Velis
+ -> Guillermo Calderaro
+ -> ------=_MIME_BOUNDARY_000_2725--
+ -> 
+ -> 
+ -> .
+<-  250 2.0.0 Ok: queued as 39BFC1A5
+ -> QUIT
+<-  221 2.0.0 Bye
+=== Connection closed with remote host.
+
+    El fuente del correo electronico recibido es adjuntado a continuacion:
+
+Return-Path: <guillermocalderaro@gmail.com>
+X-Original-To: alumnoimap@redes.unlp.edu.ar
+Delivered-To: alumnoimap@redes.unlp.edu.ar
+Received: from redes (unknown [172.28.0.1])
+	by mail.redes.unlp.edu.ar (Postfix) with ESMTP id 39BFC1A5
+	for <alumnoimap@redes.unlp.edu.ar>; Sat, 11 Apr 2020 14:44:59 +0000 (UTC)
+Date: Sat, 11 Apr 2020 14:44:54 +0000
+To: alumnoimap@redes.unlp.edu.ar
+From: guillermocalderaro@gmail.com
+Subject: test Sat, 11 Apr 2020 14:44:54 +0000
+X-Mailer: swaks v20130209.0 jetmore.org/john/code/swaks/
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_MIME_BOUNDARY_000_2910"
+
+SMTP-AE
+
+------=_MIME_BOUNDARY_000_2910
+Content-Type: text/plain
+
+Tadeo Martin Velis 
+Guillermo Calderaro
+------=_MIME_BOUNDARY_000_2910--
+
+
+
+
+a. Analice tanto la salida del comando swaks como los fuentes del mensaje recibido para responder las siguientes preguntas:
+  i. ¿A qué corresponde la información enviada por el servidor destino como respuesta al comando EHLO? Elija dos de las opciones del listado e investigue la funcionalidad de la misma.
+
+   La respuesta del servidor destino esta compueta por multiples lineas cada una de las cuales esta compuesta por un numero seguido de un comando. Esta informacion le dice al cliente las opciones que soporta el servidor. 
+    Es interesante señalar que cuando ejecutamos el comando previo con la opcion –protocol SMTP la respuesta del servidor a HELO solo consistio en          
+
+<-  250-mail.redes.unlp.edu.ar
+
+    indicando el 250 el éxito de la respuesta y acompañandose del dominio del mismo. Al observar nuevamente la respuesta enviada en primer lugar y revisar la informacion de la man page de swaks observamso que por defecto, al no establece ningun protocolo, se utiliza ESMTP (Extended SMTP).
+    Volviendo a los comandos aceptados por el servidor mencionaremos solo dos de ellos: STARTTLS [RFC2487]y PIPELINING.
+    Cuando un servidor SMTP responde al cliente con el comando STARTTLS la palabra clave puede ser utilizada por el cliente para establecer una coneccion TLS. De esta manera son capaces de usar un protocolo de la capa de transpporte seguro que les provea de privacidad y comunicación autenticada sobre internet, dandole asi a los agentes SMTP la habilidad de proteger algunas o todas de sus comunicaciones de los ojos de los atacantes.
+    Cuando un cliente recive el comando PIPELINING como respuesta al HELO enviado sabe que el servidor SMTP tiene soporte para de pipeline. Este se contrapone con el uso habitual (sin pipeline) de SMTP en el que el cliente emitia un comando y DEBIA esperar una respuesta antes de enviar el proximo comando. Cuando un cliente recibe confirmaciond e que hay soporte para pipeline, dicho cliente puede optar por transimitir grupos de comandos SMTP en lotes sin esperar respuesta de cada comando individual. De esta manera se logra agilizar el trafico de manera considerable. 
+
+  ii. Indicar cuáles cabeceras fueron agregadas por la herramienta swaks.
+
+    Las cabeceras agregadas fueron: Date, To, From, Subject, X-Mailer,MIME-Version y Content-Type con sus respectivos valores. Recordemos aquí que el formato del mensaje sta especificado en RFC – 5322 (Internet Message Format). En el mismo se especifica que cada cabecera (header field para evitar ambiguedades) esta conformado por lineas, las cuales comienzan con un nombre de campo, seguidas de ":", seguidas por un campo de cuerpo y terminadas con CRLF (<CR> Carriage return y <LF> Line Feed).    
+
+  iii. ¿Cuál es el message-id del correo enviado? ¿Quién asigna dicho valor?
+
+ El mesagge-id, identificador unico que se refiere a una version unica de un unico mensaje [RFC-5322], de el mensaje enviado es, en este caso: 39BFC1A5.
+ Es asignado por el host que recibe el mensaje, en este caso el servidor SMTP con el que interactua el cliente de correo que envia el mensaje. Esto queda claro en la linea de respuesta del servidor al cuerpo del mensaje enviado por el cliente. La misma dice:
+
+<-  250 2.0.0 Ok: queued as 39BFC1A5
+
+  Asimismo podemos verificar que el numero es el mismo en el fuente del receptor:
+
+Received: from redes (unknown [172.28.0.1])
+	by mail.redes.unlp.edu.ar (Postfix) with ESMTP id 39BFC1A5
+
+
+  iv. ¿Cuál es el software utilizado como servidor de correo electrónico?
+
+    La informacion necesaria para responder a esta pregunta la encontramos en la primera linea de los mensaje, la que envia el servidor cuando la concecion fue establecida. La misma dice:
+
+<-  220 mail.redes.unlp.edu.ar ESMTP Postfix (Lihuen-4.01/GNU)
+
+    El codigo de respuesta 220 que significa SMTP Service Ready seguido por informacion del host. En particular el nombre Postfix destaca ya que el mismo es un servidor de correos que puede correr sobre sistemas tipo UNIX. En este caso podemos observar que se esta ejecutando sobre Lihuen-4.1 una version de Linux basada en Debian GNU/Linux y desarrollada en Argentina por la Facultad de Informatica de la Universidad Nacional de La Plata. 
+
+  v. Adjunte la salida del comando swaks y los fuentes del correo electrónico.
+
+    Para mayor claridad se adjunto al comienzo del ejercicio.
+
+5. (Ejercicio de promoción) Descargue de la plataforma la captura de tráfico smtp.pcang y la salida del comando swaks smtp.swaks para responder y justificar los siguientes ejercicios.
+NOTA: para quienes hagan la promoción, este será un ejercicio entregable. En la entrega deberán estar todas las preguntas respondidas y debidamente justificadas. En los puntos donde es necesario ejecutar comandos, los mismos deberán adjuntarse a la entrega.
+
+a. ¿Por qué el contenido del mail no puede ser leido en la captura de tráfico?
+
+    Porque esta encriptado gracias al uso del protocolo TLS de la capa de transporte. Esto se puede apreciar tanto en las capturas de wireshark como en el documento smtp.swaks en el que luego de que el cliente emita el comando EHLO el servido le responde con varios comandos, siendo uno de ellos STARTTLS el cual, como mencionamos en el punto previo, permite establecer una coneccion segura gracias al protocolo TLS. Efectivamente en el archivo que captura la salida standar del comando swark podemos ver que el cliente emite el comandos
+ -> STARTTLS
+a lo que el servidor responde
+<-  220 2.0.0 Ready to start TLS
+y a partir de ahi comienza la coneccion TLS tal y como muestran los encabezados que le siguen:
+
+=== TLS started with cipher TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256
+=== TLS no local certificate set
+=== TLS peer DN="/CN=5e7e1b4f837f"
+
+
+b. Recupere el archivo adjunto a partir de la salida del comando de swaks para indicar de qué personaje se trata.
+
+    Al igual que en el ejercicio 3 inciso c-ii, colocamos el contenido de la imagen encriptada en un archivo en el directorio local llamado imagen y decodificamos la informacion que contienen= con el comando base64 flag -d (decode), con el siguiente comando
+
+
+$ base64 -d imagen > imagen.jpg
+
+    Podemos saber que se uso base64 ya que el mismo documento que contiene la salida standard de swaks nos lo dice en la linea 52:
+
+~> Content-Transfer-Encoding: BASE64
+
+    Al abrir imagen.jpg observamos a diego armando maradona levantando la copa del mundo.
+
+
+6. Investigue que son los registros SPF, para que se usan y cómo se configuran.
+
+7. Realice una consulta de DNS por registros TXT al dominio info.unlp.edu.ar y entre dichos registros evalúe la información del registro SPF. ¿Por qué cree que aparecen muchos servidores autorizados?
+
+Ejercicio de parcial.
+
+8. Suponga que el servidor de correo mail1.example.com tiene para enviar un correo a pepe@gmail.com. Indique y justifique en todos los casos:
+    Primer consulta de DNS que debe hacer mail1.example.com.
+    Suponiendo que la consulta anterior devuelve varios resultados, ¿de qué forma elegiría mail1.example.com el servidor al cuál entregar el correo? ¿Y si ese servidor no estuviera disponible?
+    Considerando que la consulta anterior retorna un listado de nombres de servidores de correo para gmail.com, ¿será necesario realizar una consulta de DNS adicional? En caso de responder afirmativamente, indique el registro por el cuál se realizará la consulta.
+    Cuál será el protocolo de aplicación, el protocolo de transporte y el puerto que mail1.example.com usará para entregar el correo al destinatario pepe@gmail.com.
