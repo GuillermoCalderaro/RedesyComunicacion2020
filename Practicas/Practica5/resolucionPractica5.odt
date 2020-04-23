@@ -1,0 +1,667 @@
+﻿Práctica 5 Capa de Transporte - Parte I
+
+1. ¿Cuál es la función de la capa de transporte?
+
+    Un protocolo de la capa de transporte proporciona una comunicación logica entre procesos de aplicación que se ejecutan en hosts diferentes. Por comunicación lógica queremos decir que desde la perspectiva de la aplicación, es como si los hosts que ejecutan los procesos estuvieran conectados directamente. Los procesos de aplicación utilizan la comunicación lógica proporcionada por la capa de transporte para enviarse mensajes entre si, sin preocuparse por los detalles de la infraestructura física para transportan estos mensajes.
+
+2. Describa la estructura del segmento TCP y UDP.
+
+    La estructura de un segmento UDP se halla detallada en su RFC: RFC-768
+
+Formato
+------
+
+                                    
+                  0      7 8     15 16    23 24    31  
+                 +--------+--------+--------+--------+ 
+                 |     Puerto      |    Puerto       | 
+                 |     Origen      |    Destino      | 
+                 +--------+--------+--------+--------+ 
+                 |                 |                 | 
+                 |     Longitud    |    Checksum     | 
+                 +--------+--------+--------+--------+ 
+                 |                                     
+                 |          data octets ...            
+                 +---------------- ...                 
+
+                      User Datagram Header Format
+
+Campos
+------
+
+El puerto de origen es un campo opcional el cual indica el puero del proceso cliente y puede ser asumido como el puerto al cual replicar en ausencia de otra informacion. Si no se lo utiliza se coloca el valor 0.
+El puerto destino solo tiene sentido en el contexto de una IP particular.
+
+La longitud es la longitud en octetos de tanto el encabezado y los datos.
+
+Checksum es el Ca-1 de la suma de un pseudo encabezado de informacion del encabezado IP, el encabezado UDP, y los datos rellenados con octetos de 0s al final (en caso de ser necesario) para hacerlo multiplo de dos octetos.
+
+    La estructura de un segmento TCP se halla detallada en su RFC: RFC-793\
+
+Formato de cabecera TCP
+
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |          Puerto de Origen     |       Puerto de Destino       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                        Numero de Secuencia                    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Numero de Reconocimiento                   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Data |           |U|A|P|R|S|F|                               |
+   | Offset| Reservado |R|C|S|S|Y|I|            Ventana            |
+   |       |           |G|K|H|T|N|N|                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           Checksum            |         Urgent Pointer        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Opciones                   |    Rellleno   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                             data                              |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                            TCP Header Format
+
+  Puerto Origen:  16 bits
+
+    El numero del puerto de origen.
+
+  Puerto destino:  16 bits
+
+    El numero del puerto de destino.
+
+  Numero de Secuencia:  32 bits
+
+    El numero de secuencia del primer octeto de data en ese segmento (excepto cuando SYN esta presente). Si SYN esta presente el numero de secuencia es el initial sequence number -numero inicial de secuencia-(ISN) y el primer octeto de datos es ISN+1.
+
+  Numero de reconocimiento:  32 bits
+
+    Si el bit ACK esta prendido este campo contiene el valor del del próximo numero de secuencia que el que envía ese segmento esta esperando recibir. 
+
+  Data Offset:  4 bits
+
+    El numero de palabras de 32 bits en un encabezado TCP. Este indica donde comienza la data.
+
+  Reserved:  6 bits
+
+    Reservado para usos futuros. Debe ser 0.
+
+  Control Bits:  6 bits (de izquierda a derecha):
+
+    URG:  Urgent Pointer field significant
+    ACK:  Acknowledgment field significant
+    PSH:  Push Function
+    RST:  Reset the connection
+    SYN:  Synchronize sequence numbers
+    FIN:  No more data from sender
+
+  Window:  16 bits
+
+    El numero de octetos de datos, comenzando por el indicado en el campo de reconocimiento que el que envia dicho segmento esta dispuesto a aceptar.
+
+  Checksum:  16 bits
+
+    El campo de Checksum es el complemento a 1 de la suma en complemento a 1 de todas las palabras de 16 bits en el encabezado y el texto. 
+
+    The checksum also covers a 96 bit pseudo header conceptually
+    prefixed to the TCP header.  This pseudo header contains the Source
+    Address, the Destination Address, the Protocol, and TCP length.
+    This gives the TCP protection against misrouted segments.  This
+    information is carried in the Internet Protocol and is transferred
+    across the TCP/Network interface in the arguments or results of
+    calls by the TCP on the IP.
+
+                     +--------+--------+--------+--------+
+                     |           Source Address          |
+                     +--------+--------+--------+--------+
+                     |         Destination Address       |
+                     +--------+--------+--------+--------+
+                     |  zero  |  PTCL  |    TCP Length   |
+                     +--------+--------+--------+--------+
+
+      The TCP Length is the TCP header length plus the data length in
+      octets (this is not an explicitly transmitted quantity, but is
+      computed), and it does not count the 12 octets of the pseudo
+      header.
+
+  Urgent Pointer:  16 bits
+
+    Este campo informa del  valor actual del puntero urgente como un desplazamiento positivo a partir del numero de secuencia de dicho segmento. Este campo solo se interpreta en segmentos en los cuales el bit de URG esta encendido.
+
+  Opciones:  variable
+
+    Options may occupy space at the end of the TCP header and are a
+    multiple of 8 bits in length.  All options are included in the
+    checksum.  An option may begin on any octet boundary.  There are two
+    cases for the format of an option:
+
+      Case 1:  A single octet of option-kind.
+
+      Case 2:  An octet of option-kind, an octet of option-length, and
+               the actual option-data octets.
+
+    The option-length counts the two octets of option-kind and
+    option-length as well as the option-data octets.
+
+    Note that the list of options may be shorter than the data offset
+    field might imply.  The content of the header beyond the
+    End-of-Option option must be header padding (i.e., zero).
+
+    A TCP must implement all options.
+
+ Currently defined options include (kind indicated in octal):
+
+      Kind     Length    Meaning
+      ----     ------    -------
+       0         -       End of option list.
+       1         -       No-Operation.
+       2         4       Maximum Segment Size.
+
+
+    Specific Option Definitions
+
+      End of Option List
+
+        +--------+
+        |00000000|
+        +--------+
+         Kind=0
+
+        This option code indicates the end of the option list.  This
+        might not coincide with the end of the TCP header according to
+        the Data Offset field.  This is used at the end of all options,
+        not the end of each option, and need only be used if the end of
+        the options would not otherwise coincide with the end of the TCP
+        header.
+
+      No-Operation
+
+        +--------+
+        |00000001|
+        +--------+
+         Kind=1
+
+        This option code may be used between options, for example, to
+        align the beginning of a subsequent option on a word boundary.
+        There is no guarantee that senders will use this option, so
+        receivers must be prepared to process options even if they do
+        not begin on a word boundary.
+
+      Maximum Segment Size
+
+        +--------+--------+---------+--------+
+        |00000010|00000100|   max seg size   |
+        +--------+--------+---------+--------+
+         Kind=2   Length=4
+
+        Maximum Segment Size Option Data:  16 bits
+
+          If this option is present, then it communicates the maximum
+          receive segment size at the TCP which sends this segment.
+          This field must only be sent in the initial connection request
+          (i.e., in segments with the SYN control bit set).  If this
+          option is not used, any segment size is allowed.
+
+  Padding:  variable
+
+    The TCP header padding is used to ensure that the TCP header ends
+    and data begins on a 32 bit boundary.  The padding is composed of
+    zeros.
+
+3. ¿Cuál es el objetivo del uso de puertos en el modelo TCP/IP?
+
+    El objetivo del uso de puertos es el de brindar un mecanismo de multiplexacion/demultiplexacion en la capa de transporte es decir la ampliacion del servicio de entrega host a hostproporcionado por la capa de red a un servicio de entrega proceso a proceso para las aplicaciones que se ejecutan en los hosts.
+    Dado que un proceso (como parte de una aplicación de red) puede tener uno o mas sockets, que la capa de transporte del host receptor realmente no entrega los datos directamente a un proceso sino a un socket y que los encabezados de los UDP tanto para UDP como para TCP contienen la información de los puertos de origen y destino es posible apreciar el alcance de este método.
+
+4. Compare TCP y UDP en cuanto a:
+
+  a. Confiabilidad.
+
+     UDP no provee un servicio confiable mientras que TCP si lo hace. Esto quiere decir que en UDP no existe diferencia entre que un mensaje llegue bien, llegue corrompido o se pierda. Mientras que TCP garantiza que los datos transmitidos por el proceso emisor sean entregados al proceso receptor correctamente y en orden. 
+
+  b. Multiplexación.
+
+    Ambos protocolos ofrecen la posibilidad de multiplexacion. Pero hay diferencias entre ambos.
+    El caso de UDP es el mas simple debido a que un socket UDP queda completamente identificado por una tupla  que consta de una direccion de IP de destino y un numero de puerto de destino. En consecuencia, si dos segmentos UDP tienen diferentes direcciones IP y/o numeros de puertos de origen, pero la misma direccion IP de destino y el mismo numero de puerto destino, entonces los dos segmentos se enviaran al mismo proceso de destino a traves del mismo sockets de destino.
+    En TCP la diferencia principal radica en que un socket TCP queda identificado por la tupla de cuatro elementos: dirección IP destino, dirección IP origen, numero de puerto de origen y numero de puerto de destino. Por lo tanto cuando un segmento TCP llega a un host procedente de la red, el host emplea los cuatro valores para dirigir (demultiplexar) el segmento al socket apropiado. En particular, y al contrario de lo que ocurre con UDP, dos segmentos TCP entrantes con dirección IP de origen o numeros de Puerto de origen diferentes seran dirigidos a dos sockets distintos.
+    Para que este esquema este completo deberemos agregar dos conceptos mas: el de socket de acogida y el de socket de conexión. El soquet de acogida es la “puerta de acceso comun” que utilizan las solicitudes TCP para establecer una conexión. Cuando esta solicitud es exitosa el host de origen crea un socket de conexión, que no es mas que un canal dedicado para que ese proceso de ese host se comunique con este proceso de este host.
+
+  c. Orientado a la conexión.
+
+    Se dice de UDO que el mismo es un servicio sin conexión, mientras que TCP es un servicio orientado a la conexión. El caso de UDP se explica debido a que en el mismo no tiene lugar una fase de establecimiento de la conexión entre las entidades de la capa de transporte emisora y receptora previa al envio del segmento. Esto no sucede en TCP en donde hay que, previo al envio de datos, establecer una conexión.
+
+  d. Controles de congestión.
+
+     Mientras que UDP no utiliza ninguna tecnica de control de congestion el servicio proporcionado por TCP si lo hace. Dicho servicio es uno que se presta a Internet como un todo y no a la aplicación invocante e impiden que cualquier  conexión TCP inunde con una cantidad de trafico excesiva los enlaces y routers existentes entre los hosts que están comunicandose.
+
+  e. Utilización de puertos.
+
+    Explicada en b. Multiplexación.
+
+  f. ¿Cuál es el campo del datagrama IP y los valores que se utilizan en este para diferenciar que se transporta TCP o UDP? (Ayuda: buscar en /etc/protocols y contrastarlo con una captura de tráfico).
+
+    El campo es el de Protocolo y los valores que se utilizan para distingir UDP de TCP son: 6 para TCP y 7 para UDP.
+
+5. La PDU de la capa de transporte es el segmento. Sin embargo, en algunos contextos suele utilizarse el término datagrama. Indique cuando.
+
+   Dicha denominación solo aplica a los paquetes UDP. Pero dado que el termino datagrama se utiliza también para indicar un paquete de la capa de red dicha denominación se reserva para cuando no es posible ninguna ambigüedad.
+
+6. Describa el saludo de tres vías de TCP.
+
+    El saludo de tres vias (tree way handshake) es la forma en la cual se establece un a coneccion TCP entre un cliente y un servidor. Este consta de tres partes, o sea consta del intercambio de tres segmentos TCP entre cliente y servidor. Dicho saludo sigue una secuencia determinada: Primero comienza el cliente enviando un segmento TCP al servidor, luego el servidor emite una respuesta, y finalmente el cliente envía un tercer segmento. Obviamente el saludo no consta solo del envío de segmentos entre cliente y servidor. Los mismos deben estar dirigidos al socket adecuado (de acogida) y cada segmento se debe acompañar de los flags adecuados. Ademas el servicio provisto por el servidor en dicho puerto debe estar “Escuchando” (LISTEN). El saludo hace que ambos, servidor y cliente atraviesen distintos estados hasta alcanzar el estado de ESTABLISHED, en el cual la conexión esta establecida y la información puede fluir libremente entre ambos extremos (recuérdese que es una conexión Full Duplex). 
+    A continuacion tomamos de la RFC-793 un ejemplo de saludo exitoso
+
+
+
+      TCP A                                                TCP B
+
+  1.  CLOSED                                               LISTEN
+
+  2.  SYN-SENT    --> <SEQ=100><CTL=SYN>               --> SYN-RECEIVED
+
+  3.  ESTABLISHED <-- <SEQ=300><ACK=101><CTL=SYN,ACK>  <-- SYN-RECEIVED
+
+  4.  ESTABLISHED --> <SEQ=101><ACK=301><CTL=ACK>       --> ESTABLISHED
+
+  5.  ESTABLISHED --> <SEQ=101><ACK=301><CTL=ACK><DATA> --> ESTABLISHED
+
+    En este ejemplo se pueden ver los estados por los que atraviesa tanto TCP A como TCP B, asi como los Flags y el Numero de secuencia, que en este caso es el Initial Sequence Number (ISN).
+
+7. Investigue qué es el ISN (Initial Sequence Number). Relaciónelo con el saludo de tres vías.
+
+    El Initial sequence number (ISN) es el primer numero de secuencia usado en una conexión. Se lo suele elegir usando un procedimiento que se basa en un reloj. Ahora podemos entender con mas claridad lo que dijimos en el encabezado de los segmentos TCP sobre el campo numero de secuencia:
+    “El numero de secuencia del primer octeto de data en ese segmento (excepto cuando SYN esta presente). Si SYN esta presente el numero de secuencia es el initial sequence number -numero inicial de secuencia-(ISN) y el primer octeto de datos es ISN+1.”    
+    Como se aprecia, el numero de inicial de secuencia es un numero utilizado para evitar la confusión en la comunicación y prever la ocurrencia de la reencarnación de los segmentos. En caso de que una conexión TCP se cierre y un segmento se halle “bagando por la red” y alcance su destino luego de que la conexión original se cerro, pero una nueva se abrió, se utiliza el ISN.
+    Para que una conexión sea establecida o inicializada los dos TCP deben sincronizar los números de secuencia. Esto puede apreciarse en el ejemplo del saludo de tres vías, en el cual, algunos de sus segmentos tenían colocado el bit SYN (de sincronizacion) y un numero de secuencia inicial. Para el caso del Host A el ISN era 100, para el caso del host B era el 300. Dichos números eran reconocidos en el campo Ack del segmento que recibían a continuación.
+
+8. Investigue qué es el MSS. ¿Cuándo y cómo se negocia?
+
+    El MSS es el Maximum Segment Size [RFC 6691]. Se halla en el campo de opciones del encabezado de un segmento TCP y solo se utiliza al inicio de la conexion. Con respecto al como de la negociacion, el mismo implica conocer algunos terminos. El MTU (Maximun Transmision Unit) especifica el maximo tamaño que puede contener un paquete que viaje en una red de conmutacion de paquetes. Para el caso de Internet diucho limite se asocia al protocolo de Ethernet y se situa entre los 1500 B. Si enviamos paquetes mas grandes, los mismos seran fragmentados. Se busca evitar dicha fragmentacion. Para ello el tamaño del segmento de datos TCP junto con su encabezado y el encabezado IP (20 B encabezado TCP, 20B IPv4, 40B IPv6) no deben exceder dicho valor. 
+
+    MTU <= MSS + TCP header +IP header 
+
+9. Utilice el comando ss (reemplazo de netstat) para obtener la siguiente información de su PC:
+
+  a. Para listar las comunicaciones TCP establecidas.
+  b. Para listar las comunicaciones UDP establecidas.
+  c. Obtener sólo los servicios TCP que están esperando comunicaciones
+  d. Obtener sólo los servicios UDP que están esperando comunicaciones.
+  e. Repetir los anteriores para visualizar el proceso del sistema asociado a la conexión.
+  f. Obtenga la misma información planteada en los items anteriores usando el comando netstat.
+
+
+    Obtenemos todas las conecciones TCP, listadas a continuacion
+
+State  Recv-Q   Send-Q      Local Address:Port              Peer Address:Port   
+
+LISTEN 0        128         127.0.0.53%lo:domain                 0.0.0.0:*      
+LISTEN 0        5               127.0.0.1:ipp                    0.0.0.0:*      
+LISTEN 0        128             127.0.0.1:postgresql             0.0.0.0:*      
+ESTAB  0        0            192.168.0.92:51534          172.217.172.165:https  
+ESTAB  0        0            192.168.0.92:53334           64.233.190.188:5228   
+ESTAB  0        0            192.168.0.92:51544          172.217.172.165:https  
+ESTAB  0        0            192.168.0.92:51542          172.217.172.165:https  
+ESTAB  0        0            192.168.0.92:39040          200.152.162.136:https  
+LISTEN 0        128                     *:8086                         *:*      
+LISTEN 0        5                   [::1]:ipp                       [::]:*      
+LISTEN 0        128                     *:omniorb                      *:*      
+
+    Podemos filtrar por estados con la expresion state seguida de el estado que deseamos filtrar tal como se menciona en la man page: 
+FILTER := [ state STATE-FILTER ] [ EXPRESSION ]
+
+    $ ss -ta state established
+Recv-Q    Send-Q          Local Address:Port             Peer Address:Port      
+0         0                192.168.0.92:51534         172.217.172.165:https     
+0         0                192.168.0.92:53334          64.233.190.188:5228      
+0         0                192.168.0.92:51544         172.217.172.165:https     
+0         0                192.168.0.92:51542         172.217.172.165:https     
+0         0                192.168.0.92:39040         200.152.162.136:https    
+
+    Si se compara esta lista con la previa vera que se filtraron solo los sockets TCP con conexiones establecidas
+
+    Para obtener las conexiones TCP que esperan comunicaciones utilizamos el comando
+
+$ ss -ta state listening
+Recv-Q        Send-Q            Local Address:Port     Peer Address:Port               
+0             128               127.0.0.53%lo:domain        0.0.0.0:*                  
+0             5                 127.0.0.1:ipp               0.0.0.0:*                  
+0             128               127.0.0.1:postgresql        0.0.0.0:*                  
+0             128               *:8086                      *:*                  
+0             5                 [::1]:ipp                   [::]:*                  
+0             128               *:omniorb                   *:*              
+    Podemos utilizar los mismos comandos para UDP
+
+		$ ss -ua
+
+State  Recv-Q  Send-Q    Local Address:Port        Peer Address:Port  
+
+ESTAB  0       0          192.168.0.92:56002      172.217.162.3:443   
+ESTAB  0       0          192.168.0.92:60217    172.217.192.189:443   
+ESTAB  0       0             127.0.0.1:53055          127.0.0.1:53055 
+UNCONN 0       0         127.0.0.53%lo:domain           0.0.0.0:*     
+UNCONN 0       0               0.0.0.0:bootpc           0.0.0.0:*     
+UNCONN 0       0               0.0.0.0:49229            0.0.0.0:*     
+UNCONN 0       0               0.0.0.0:ipp              0.0.0.0:*     
+ESTAB  0       0          192.168.0.92:49814    172.217.172.174:443   
+UNCONN 0       0           224.0.0.251:mdns             0.0.0.0:*     
+UNCONN 0       0           224.0.0.251:mdns             0.0.0.0:*     
+UNCONN 0       0               0.0.0.0:mdns             0.0.0.0:*     
+UNCONN 0       0                  [::]:45933               [::]:*     
+UNCONN 0       0                  [::]:mdns                [::]:*     
+
+	$ ss -ua state established
+
+Recv-Q  Send-Q      Local Address:Port           Peer Address:Port    
+
+0       0            192.168.0.92:60217       172.217.192.189:443     
+0       0               127.0.0.1:53055             127.0.0.1:53055   
+0       0            192.168.0.92:49814       172.217.172.174:443     
+
+	$ ss -ua state listening
+
+Recv-Q   Send-Q        Local Address:Port        Peer Address:Port    
+
+    Para obtener la informacion asociada del proceso que esta vinculado a dicha conexión se puede utilizar el flag -p, --processes.
+
+10. ¿Qué sucede si llega un segmento TCP con el flag SYN activo a un host que no tiene ningún proceso esperando en el puerto destino de dicho segmento (es decir, que dicho puerto no está en estado LISTEN)?
+
+  a. Utilice hping3 para enviar paquetes TCP al puerto destino 22 de la máquina virtual con el flag SYN activado.
+  b. Utilice hping3 para enviar paquetes TCP al puerto destino 40 de la máquina virtual con el flag SYN activado.
+  c. ¿Qué diferencias nota en las respuestas obtenidas en los dos casos anteriores? ¿Puede explicar a qué se debe? (Ayuda: utilice el comando ss visto anteriormente).
+
+    $ ss -tan
+
+State      Recv-Q Send-Q        Local Address:Port          Peer Address:Port 
+LISTEN     0      5                 127.0.0.1:4038                     *:*     
+LISTEN     0      128                       *:111                      *:*     
+LISTEN     0      10                10.0.2.15:53                       *:*     
+LISTEN     0      10                127.0.0.1:53                       *:*     
+LISTEN     0      128                       *:22                       *:*     
+LISTEN     0      128                       *:60054                    *:*     
+LISTEN     0      128               127.0.0.1:953                      *:*     
+LISTEN     0      128                      :::111                     :::*     
+LISTEN     0      10                       :::53                      :::*     
+LISTEN     0      128                      :::22                      :::*     
+LISTEN     0      128                     ::1:953                     :::*     
+LISTEN     0      128                      :::53532                   :::*   
+
+$ sudo hping3 localhost -S -p 40
+
+HPING localhost (lo 127.0.0.1): S set, 40 headers + 0 data bytes
+len=40 ip=127.0.0.1 ttl=64 DF id=41971 sport=40 flags=RA seq=0 win=0 rtt=1.1 ms
+len=40 ip=127.0.0.1 ttl=64 DF id=42016 sport=40 flags=RA seq=1 win=0 rtt=1.4 ms
+len=40 ip=127.0.0.1 ttl=64 DF id=42017 sport=40 flags=RA seq=2 win=0 rtt=1.4 ms
+len=40 ip=127.0.0.1 ttl=64 DF id=42229 sport=40 flags=RA seq=3 win=0 rtt=1.4 ms
+len=40 ip=127.0.0.1 ttl=64 DF id=42462 sport=40 flags=RA seq=4 win=0 rtt=5.0 ms
+^C
+--- localhost hping statistic ---
+5 packets transmitted, 5 packets received, 0% packet loss
+round-trip min/avg/max = 1.1/2.1/5.0 ms
+
+	$ sudo hping3 localhost -S -p 22
+
+HPING localhost (lo 127.0.0.1): S set, 40 headers + 0 data bytes
+
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=0 win=43690 rtt=1.1 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=1 win=43690 rtt=2.6 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=2 win=43690 rtt=2.5 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=3 win=43690 rtt=2.5 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=4 win=43690 rtt=2.4 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=5 win=43690 rtt=1.4 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=6 win=43690 rtt=1.3 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=7 win=43690 rtt=1.4 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=8 win=43690 rtt=3.7 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=9 win=43690 rtt=3.8 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=10 win=43690 rtt=3.9 ms
+len=44 ip=127.0.0.1 ttl=64 DF id=0 sport=22 flags=SA seq=11 win=43690 rtt=2.6 ms
+^C
+--- localhost hping statistic ---
+12 packets transmitted, 12 packets received, 0% packet loss
+round-trip min/avg/max = 1.1/2.4/3.9 ms
+
+    Como se puede apreciar, en el host local, hay un servicio atendiendo en el puerto 22, mas ninguno en el puerto 40. Esto hace que cuando los paquetes lleguen con el flag de SYN encendido a un host en el cual hay un puerto escuchando reciban un ACK con un SYN, en cambio al llegar a un host en el cual el puerto al que intentan conectarse no esta disponible, reciban un ACK con un RST, tal y como indican los flags de las respuestas mostradas en stdout y marcadas con negritas
+
+
+11. ¿Qué sucede si llega un datagrama UDP a un host que no tiene a ningún proceso esperando en el puerto destino de dicho datagrama (es decir, que dicho puerto no está en estado LISTEN)?
+
+  a. Utilice hping3 para enviar datagramas UDP al puerto destino 68 de la máquina virtual.
+  b. Utilice hping3 para enviar datagramas UDP al puerto destino 40 de la máquina virtual.
+  c. ¿Qué diferencias nota en las respuestas obtenidas en los dos casos anteriores? ¿Puede explicar a qué se debe? (Ayuda: utilice el comando ss visto anteriormente).
+
+$ ss -nau
+State      Recv-Q Send-Q       Local Address:Port       Peer Address:Port 
+UNCONN     0      0             *:618                        *:*     
+UNCONN     0      0              127.0.0.1:629               *:*     
+UNCONN     0      0                 *:5815                   *:*     
+UNCONN     0      0               127.0.0.1:4038             *:*     
+UNCONN     0      0               10.0.2.15:53               *:*     
+UNCONN     0      0               127.0.0.1:53               *:*     
+UNCONN     0      0               *:68                       *:*     
+UNCONN     0      0               *:111                      *:*     
+UNCONN     0      0              *:49310                     *:*     
+UNCONN     0      0               *:5353                     *:*     
+UNCONN     0      0               ::8801                    :::*     
+UNCONN     0      0               :::618                    :::*     
+UNCONN     0      0             :::53                        :::*     
+UNCONN     0      0            :::111                       :::*
+UNCONN     0      0            :::49488                     :::*     
+
+
+	$ sudo hping3 localhost --udp -p 68
+
+HPING localhost (lo 127.0.0.1): udp mode set, 28 headers + 0 data bytes
+
+--- localhost hping statistic ---
+22 packets transmitted, 0 packets received, 100% packet loss
+round-trip min/avg/max = 0.0/0.0/0.0 ms
+
+	$ sudo hping3 localhost --udp -p 40
+
+HPING localhost (lo 127.0.0.1): udp mode set, 28 headers + 0 data bytes
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2198 seq=0
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2199 seq=1
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2200 seq=2
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2201 seq=3
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2202 seq=4
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2203 seq=5
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2204 seq=6
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2205 seq=7
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2206 seq=8
+ICMP Port Unreachable from ip=127.0.0.1 name=localhost 
+status=0 port=2207 seq=9
+^C
+--- localhost hping statistic ---
+10 packets transmitted, 10 packets received, 0% packet loss
+round-trip min/avg/max = 1.7/2.9/4.6 ms
+
+    En este caso podemos observar como se comporta el protocolo UDP el cual contrasta con TCP. Aqui, al enviar paquetes a un puerto que atiende conecciones UDP , el  68, no observamos ningun tipo de confirmacion de la llegada. En el caso de que quisieramos enviar un segmento a un puerto que no esta atendiendo conecciones UDP podriamos, como en este caso, recibir un mensaje que nos notifique esta situacion, pero tambien podriamos no obtener ningun tipo de respuesta en absoluto.
+
+12. Investigue los distintos tipos de estado que puede tener una conexión TCP.
+(Ver la página: https://thewalnut.io/app/release/73/#time=21)
+
+    Los distintos estados que puede tener una conexión TCP se listan a continuacion, con una breve descripcion
+
+CLOSED : No hay conexión activa ni pendiente.
+LISTEN: El servidor espera una llamada.
+SYN RCVD: Llegó una solicitud de conexión; espera ACK.
+SYN SENT: La aplicación comenzó a abrir una conexión.
+ESTABLISHED: Estado normal de transferencia de datos.
+
+FIN WAIT 1: La aplicación dijo que ya terminó.
+FIN WAIT 2: El otro lado acordó liberar.
+TIMED WAIT: Espera a que todos los paquetes mueran.
+CLOSING: Ambos lados intentaron cerrar simultáneamente.
+CLOSE WAIT: El otro lado inició una liberación.
+LAST ACK: Espera a que todos los paquetes mueran.
+
+13. Use CORE para armar una topología como la siguiente, sobre la cual deberá realizar:
+
+<<consultar pdf adjunto para visualizar grafico de topologia>>
+
+  a. En ambos equipos inspeccionar el estado de las conexiones y mantener abiertas ambas ventanas con el comando corriendo para poder visualizar los cambios a medida que se realiza el ejercicio. Ayuda: watch -n1 ’ss -nat’.
+
+  b. En Servidor, utilice la herramienta ncat para levantar un servicio que escuche en el puerto 8001/TCP. Utilice la opcion -k para que el servicio sea persistente. Verifique el estado de las conexiones.
+
+  c. Desde CLIENTE1 conectarse a dicho servicio utilizando también la herramienta ncat. Inspeccione el estado de las conexiones.
+
+  d. Iniciar otra conexión desde CLIENTE1 de la misma manera que la anterior y verificar el estado de las conexiones. ¿De qué manera puede identificar cada conexión?
+
+  e. En base a lo observado en el item anterior, ¿es posible iniciar más de una conexión desde el cliente al servidor en el mismo puerto destino? ¿Por qué? ¿Cómo se garantiza que los datos de una conexión no se mezclarán con los de la otra?
+
+  f. Analice en el tráfico de red, los flags de los segmentos TCP que ocurren cuando:
+  
+    i. Cierra la última conexión establecida desde CLIENTE1. Evalúe los estados  de las conexiones en ambos equipos.
+    ii. Corta el servicio de ncat en el servidor (Ctrl+C). Evalúe los estados de las conexiones en ambos equipos.
+    iii. Cierra la conexión en el cliente. Evalúe nuevamente los estados de las conexiones.
+
+
+  En el servidor ejecutamos
+
+	 $ ss -atpn
+
+    y constatamos que no hay ningun servicio atendiendo.
+
+State   Recv-Q    Send-Q        Local Address:Port         Peer Address:Port    
+
+   luego ejecutamos
+
+	$ nc -kl -p 8001 &
+
+    y 
+
+	$ ps
+
+  PID TTY          TIME CMD
+   26 pts/2    00:00:00 bash
+   36 pts/2    00:00:00 nc
+   37 pts/2    00:00:00 ps
+
+    y finalmente
+
+$ ss -atpn
+
+    constatando que el servicio se halla efectivamente
+  
+State    Recv-Q    Send-Q        Local Address:Port        Peer Address:Port    
+LISTEN   0         1                   0.0.0.0:8001             0.0.0.0:* users:(("nc",pid=36,fd=3))
+
+    Luego, ejecutamos del lado del cliente
+
+
+	$ ss -atpn
+
+    y Observamos que no hay ninguna coneccion establecida
+
+State   Recv-Q    Send-Q        Local Address:Port         Peer Address:Port    
+
+    La establecemos con el comando
+
+	$ nc 10.0.0.10 8001 &
+
+    y lo confirmamos con
+    
+	$ ss -atpn
+
+State      Recv-Q   Send-Q        Local Address:Port        Peer Address:Port   
+ESTAB      0        0                 10.0.0.20:58348          10.0.0.10:8001 users:(("nc",pid=29,fd=3))
+
+    En el servidor podemos verificar lo sucedido ejecutando
+
+	$ ss -atpn
+
+State      Recv-Q       Send-Q              Local Address:Port             Peer Address:Port                                        
+LISTEN     0            1                         0.0.0.0:8001                  0.0.0.0:*           users:(("nc",pid=36,fd=3))      
+ESTAB      0            0                       10.0.0.10:8001 10.0.0.20:58348       users:(("nc",pid=36,fd=4))      
+
+    Si luego en el cliente establecemos otra coneccion TCP con el comando
+
+	$ nc -kl -p 8001 &
+
+    y ejecutamos
+
+	$ ss -atpn
+
+    podemos observar que hay dos conecciones establecidas
+
+State       Recv-Q        Send-Q                Local Address:Port                Peer Address:Port                                          
+ESTAB       0             0                         10.0.0.20:58608                  10.0.0.10:8001        users:(("nc",pid=38,fd=3))        
+ESTAB       0             0                         10.0.0.20:58610                  10.0.0.10:8001        users:(("nc",pid=40,fd=3))        
+
+    De la misma manera, en el servidor hacemos 
+
+$ ss -atpn
+
+   y verificamos que hay dos conecciones al mismo host. Se diferencian por el numero de puerto del destino
+
+State          Recv-Q      Send-Q            Local Address:Port            Peer Address:Port                                        
+LISTEN         2           1                       0.0.0.0:8001                 0.0.0.0:*           users:(("nc",pid=36,fd=3))      
+ESTAB          0           0                     10.0.0.10:8001               10.0.0.20:58610                                       
+ESTAB          0           0                     10.0.0.10:8001 10.0.0.20:58608                                       
+
+
+14. Dada la siguiente salida del comando ss, responda:
+
+<<ver cuadro en pdf adjunto>
+
+  a. ¿Cuántas conexiones hay establecidas?
+    
+    Tal y como indica el estado ESTABLISHED hay 9 conecciones establecidas.
+
+  b. ¿Cuántos puertos hay abiertos a la espera de posibles nuevas conexiones?
+
+    Tal y como indica el estado LISTEN hay 5 conecciones a la espera de posibles conecciones.
+
+  c. El cliente y el servidor de las comunicaciones HTTPS (puerto 443), ¿residen en la misma máquina?
+
+    No, ya que el servidor atiende en la maquina con IP 163.10.5.222 mientras que el cliente lo hace en aquella con IP 64.233.163.120.
+
+  d. El cliente y el servidor de la comunicación SSH (puerto 22), ¿residen en la misma máquina?
+
+    Si, tal y como evidencia su misma IP 127.0.0.1, con distinto puerto.
+
+  e. Liste los nombres de todos los procesos asociados con cada comunicación. Indique para cada uno si se trata de un proceso cliente o uno servidor.
+
+
+
+  f. ¿Cuáles conexiones tuvieron el cierre iniciado por el host local y cuáles por el remoto?
+
+    Una fue finalizada por el remoto, tal y como lo indica el estado CLOSE-WAIT, mientras que una fue tambien finalizada por el local tal y como indica el estado TIME-WAIT 
+
+  g. ¿Cuántas conexiones están aún pendientes por establecerse?
+
+    Solo 1, tal y como indica el estado SYN-SENT.
+
+15. Dadas las salidas de los siguientes comandos ejecutados en el cliente y el 
+servidor, responder:
+
+	servidor# ss -natu | grep 110
+
+tcp LISTEN    0   0                *:110              *:*
+tcp SYN-RECV  0   0          157.0.0.1:110      157.0.11.1:52843
+
+	cliente# ss -natu | grep 110
+
+tcp SYN-SENT  0   1        157.0.11.1:52843      157.0.0.1:110
+
+
+a. ¿Qué segmentos llegaron y cuáles se están perdiendo en la red?
+
+
+b. ¿A qué protocolo de capa de aplicación y de transporte se está intentando conectar el cliente?
+
+c. ¿Qué flags tendría seteado el segmento perdido?
+
+    Vemos que cliente y servidor estan en el saludo de tres vias. Esto nos situan en la capa de Transporte, en el protocolo TCP. No parece necesario que se haya perdido un paquete, ya que el mismo podria estar en transito. El cliente inicio un intento de coneccion enviando un segmento TCP a  157.0.0.1 a su puerto 110. Al hacer esto entro en el estado SYN SENT, a la espera de la confirmacion del servidor. EL servidor tiene, efectivamente, un  socket TCP en dicho puerto, y recibio dicho segmento TCP, enviandole un segmento TCP con los flags ACK y SYN encendidos. Al hacerlo, entro en estado SYN RECV. El lado del cliente esta esperando dicho segmento para poder establecer la coneccion y pasar al estado ESTABLISHED/ Al acerlo, enviara otro segmento al servidor, el cual, al recibirlo, cambiara de estado y pasara al de ESTABLISHED. 
+
+
+
